@@ -434,6 +434,25 @@
       background: var(--sea-light)
     }
 
+    .cd .cd-gmap {
+      background: var(--kelp);
+      color: var(--foam);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+      text-decoration: none;
+      display: inline-block
+    }
+
+    .cd .cd-gmap:hover {
+      background: var(--kelp-dark)
+    }
+
     .em {
       text-align: center;
       padding: 40px 18px;
@@ -951,7 +970,7 @@
       position: absolute;
       top: 10px;
       right: 12px;
-      z-index: 800;
+      z-index: 1200;
       background: var(--foam);
       border-radius: 6px;
       padding: 3px;
@@ -1436,61 +1455,6 @@
       .ff {
         padding-bottom: max(10px, env(safe-area-inset-bottom))
       }
-    @media(max-width:768px) {
-      header {
-        padding: 8px 12px;
-        padding-top: max(8px, env(safe-area-inset-top))
-      }
-
-      header h1 {
-        font-size: 1.1rem
-      }
-
-      .hs {
-        display: none
-      }
-
-      .main {
-        flex-direction: column
-      }
-
-      .sidebar {
-        width: 100%;
-        height: 45%;
-        border-left: none;
-        border-top: 1px solid var(--sand-dark);
-        box-shadow: 0 -4px 20px var(--shadow)
-      }
-
-      .sidebar .fw.on~.lw {
-        display: none
-      }
-
-      .lt {
-        right: 10px;
-        top: 10px
-      }
-
-      .search-box {
-        left: 48px;
-        width: calc(100% - 160px);
-        top: 10px
-      }
-
-      .fab {
-        bottom: max(16px, env(safe-area-inset-bottom));
-        padding: 14px 22px;
-        font-size: .92rem
-      }
-
-      .fab-gps {
-        bottom: max(16px, env(safe-area-inset-bottom));
-        padding: 14px 18px
-      }
-
-      .ff {
-        padding-bottom: max(10px, env(safe-area-inset-bottom))
-      }
     }
   </style>
 </head>
@@ -1524,9 +1488,6 @@
         <span id="userInfo" style="display:none"><img id="userPhoto" src="" alt=""><span id="userName"></span><button
             id="logoutBtn" onclick="doLogout()">Esci</button></span>
       </div>
-      <button class="hb" onclick="expJSON()">↗ Esporta</button>
-      <button class="hb" onclick="document.getElementById('imp').click()">↙ Importa</button>
-      <button class="hb" onclick="expKML()">🌍 KML</button>
     </div>
   </header>
   <div class="main">
@@ -1558,6 +1519,11 @@
         </div>
         <div style="padding:8px 14px 0"><button class="bn bp" style="width:100%;padding:10px" onclick="sa()">＋ Aggiungi spot</button></div>
         <div class="sl" id="sl"></div>
+        <div style="padding:6px 14px 10px;border-top:1px solid var(--sand-dark);display:flex;gap:6px;flex-wrap:wrap">
+          <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="expJSON()">↗ Esporta</button>
+          <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="document.getElementById('imp').click()">↙ Importa</button>
+          <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="expKML()">🌍 KML</button>
+        </div>
       </div>
       <div class="fw" id="fw">
         <div class="fh">
@@ -2027,7 +1993,7 @@
       el.innerHTML = fl.map(s => {
         const lc = Array.isArray(s.log) ? s.log.length : 0, pc = Array.isArray(s.pdfs) ? s.pdfs.length : 0, kc = Array.isArray(s.keypoints) ? s.keypoints.length : 0;
         const lastLog = lc ? s.log[s.log.length - 1] : null;
-        return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '<div class="cd-actions"><button class="cd-edit" onclick="event.stopPropagation();oe(\'' + s.id + '\')">✏️ Modifica</button></div></div>';
+        return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '<div class="cd-actions"><a class="cd-gmap" href="https://www.google.com/maps?q=' + s.lat + ',' + s.lng + '" target="_blank" onclick="event.stopPropagation()">🗺️ Google Maps</a><button class="cd-edit" onclick="event.stopPropagation();oe(\'' + s.id + '\')">✏️ Modifica</button></div></div>';
       }).join('');
       updateSpotBadge();
     }
