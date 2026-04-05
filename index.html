@@ -1451,8 +1451,6 @@
   <header>
     <h1>🎣 Compendio di Pesca</h1>
     <div class="hr">
-      <div class="hs">
-        <span class="st"><span class="dt dv"></span><span id="cV">0</span> visitati</span>
       <div class="group-info" id="groupInfo" style="display:none" onclick="toggleGroupPopup(event)">
         👥 <span id="groupCode"></span>
         <div class="group-popup" id="groupPopup">
@@ -1468,6 +1466,8 @@
           <button class="gpb" onclick="leaveGroup(event)">Lascia gruppo</button>
         </div>
       </div>
+      <div class="hs">
+        <span class="st"><span class="dt dv"></span><span id="cV">0</span> visitati</span>
         <span class="st"><span class="dt dw"></span><span id="cW">0</span> wishlist</span>
         <span id="syncStatus" title="Stato sincronizzazione"></span>
       </div>
@@ -1572,7 +1572,7 @@
           <div class="fg"><label>Coordinate spot</label>
             <div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number"
                 step="any" placeholder="Lng"></div>
-            <div class="ch" id="cH">Clicca sulla mappa o usa GPS</div>
+            <div class="ch" id="cH">Clicca sulla mappa per posizionare lo spot</div>
           </div>
         </div>
         <div class="ff">
@@ -1606,10 +1606,9 @@
       </div>
     </div>
   </div>
-  <div class="fab-list" id="fabList" onclick="toggleSidebar()"><span>📋</span><span>Spot</span><div class="badge" id="spotBadge">0</div></div>
+  <div class="fab-list" id="fabList" onclick="toggleSidebar()">📋 Lista Spot <div class="badge" id="spotBadge">0</div></div>
   <button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
   <div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
-  <button class="fab-gps" id="fabGps" onclick="addKpFromGPS()">📡 Segna posizione</button>
   <input type="file" id="imp" accept=".json" style="display:none" onchange="handleImp(event)">
 
   <!-- Firebase SDK -->
@@ -1945,7 +1944,6 @@
         curKps.push({ name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, id: Date.now().toString(36) });
         renKps(); kpMapMode = false;
         document.getElementById('fabH').style.display = 'none';
-        if (document.getElementById('fw').classList.contains('on')) document.getElementById('fabGps').classList.add('on');
         return;
       }
       document.getElementById('fLa').value = e.latlng.lat.toFixed(6);
@@ -1973,7 +1971,7 @@
 
       updateSpotBadge();
     // ========== FORM ====
-    function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; document.getElementById('fabGps').classList.add('on'); opf(); }
+    function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; opf(); }
     function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; ust(); }
     function oe(id) {
       const s = spots.find(x => x.id === id); if (!s) return;
@@ -1997,13 +1995,11 @@
       document.getElementById('fLo').value = s.lng;
       document.getElementById('fabA').style.display = 'none';
       document.getElementById('fabH').style.display = 'none';
-      document.getElementById('fabGps').classList.add('on');
       opf(); ust(); unk(); map.closePopup();
     }
     function cf() {
       document.getElementById('fw').classList.remove('on'); document.getElementById('lw').classList.remove('off');
       document.getElementById('fabA').style.display = 'flex'; document.getElementById('fabH').style.display = 'none';
-      document.getElementById('fabGps').classList.remove('on');
       plc = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
     }
     function clr() {
@@ -2075,8 +2071,7 @@
     function addKpFromGPS() {
       if (!navigator.geolocation) { setGpsStatus('GPS non disponibile su questo dispositivo', 'error'); return; }
       const btn = document.getElementById('kpGpsBtn');
-      const fab = document.getElementById('fabGps');
-      btn.classList.add('active'); fab.classList.add('locating');
+      btn.classList.add('active');
       btn.textContent = '📡 Localizzando...';
       setGpsStatus('Acquisizione posizione GPS...');
       navigator.geolocation.getCurrentPosition(
@@ -2089,7 +2084,7 @@
             setGpsStatus('✅ Salvato! Precisione: ~' + acc + 'm');
             map.flyTo([lat, lng], 16, { duration: .5 });
           } else { setGpsStatus(''); }
-          btn.classList.remove('active'); fab.classList.remove('locating');
+          btn.classList.remove('active');
           btn.textContent = '📡 Segna posizione GPS';
         },
         function (err) {
@@ -2098,7 +2093,7 @@
           if (err.code === 2) msg = 'Posizione non disponibile. Sei al coperto?';
           if (err.code === 3) msg = 'Timeout GPS. Riprova all\'aperto.';
           setGpsStatus(msg, 'error');
-          btn.classList.remove('active'); fab.classList.remove('locating');
+          btn.classList.remove('active');
           btn.textContent = '📡 Segna posizione GPS';
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -2108,7 +2103,6 @@
       kpMapMode = true;
       document.getElementById('fabH').style.display = 'flex';
       document.getElementById('fabH').textContent = '📍 Tocca la mappa per il keypoint';
-      document.getElementById('fabGps').classList.remove('on');
       setGpsStatus('Tocca un punto sulla mappa...');
     }
     function setGpsStatus(msg, type) { const el = document.getElementById('gpsStatus'); el.textContent = msg; el.className = 'gps-status' + (type === 'error' ? ' error' : ''); }
