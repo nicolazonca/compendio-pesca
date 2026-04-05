@@ -1989,10 +1989,15 @@
       if (!plc) return;
       if (kpMapMode) {
         const name = prompt('Nome keypoint:');
-        if (!name) return;
+        if (!name) { kpMapMode = false; plc = false; document.getElementById('mapPickHint').classList.remove('on'); return; }
         curKps.push({ name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, id: Date.now().toString(36) });
-        renKps(); kpMapMode = false;
+        renKps();
         document.getElementById('mapPickHint').classList.remove('on');
+        plc = false;
+        setTimeout(function() {
+          kpMapMode = false;
+          var sb = document.querySelector('.sidebar'); if (sb) sb.classList.add('mobile-open');
+        }, 350);
         return;
       }
       if (mapPickMode) {
@@ -2001,10 +2006,13 @@
         document.getElementById('cH').textContent = '✅ ' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
         if (tmk) map.removeLayer(tmk);
         tmk = L.circleMarker(e.latlng, { radius: 7, color: '#e07a5f', fillColor: '#e07a5f', fillOpacity: .5 }).addTo(map);
-        // Auto-return to form
-        mapPickMode = false;
+        // Auto-return to form after short delay for visual feedback
         document.getElementById('mapPickHint').classList.remove('on');
-        var sb = document.querySelector('.sidebar'); if (sb) sb.classList.add('mobile-open');
+        plc = false;
+        setTimeout(function() {
+          mapPickMode = false;
+          var sb = document.querySelector('.sidebar'); if (sb) sb.classList.add('mobile-open');
+        }, 350);
         return;
       }
     });
@@ -2384,9 +2392,9 @@
       }
     }
 
-    // Close mobile sidebar when clicking outside
+    // Close mobile sidebar when clicking outside (but not during map pick modes)
     document.addEventListener("click", function(e) {
-      if (window.innerWidth <= 700) {
+      if (window.innerWidth <= 700 && !mapPickMode && !kpMapMode) {
         const sidebar = document.querySelector(".sidebar");
         const fabList = document.getElementById("fabList");
         if (sidebar && sidebar.classList.contains("mobile-open") && !sidebar.contains(e.target) && !fabList.contains(e.target)) {
