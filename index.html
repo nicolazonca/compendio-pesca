@@ -411,6 +411,29 @@
       overflow: hidden
     }
 
+    .cd .cd-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px
+    }
+
+    .cd .cd-edit {
+      background: var(--sea);
+      color: var(--foam);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s
+    }
+
+    .cd .cd-edit:hover {
+      background: var(--sea-light)
+    }
+
     .em {
       text-align: center;
       padding: 40px 18px;
@@ -1215,11 +1238,11 @@
         width: 18px;
         height: 18px
       }
-      /* Mobile search bar - collapsed by default */
+      /* Mobile search bar - collapsed by default, next to zoom buttons */
       .search-box {
         width: 40px;
-        left: auto;
-        right: 12px;
+        left: 50px;
+        right: auto;
         top: 10px
       }
 
@@ -1963,16 +1986,15 @@
       el.innerHTML = fl.map(s => {
         const lc = Array.isArray(s.log) ? s.log.length : 0, pc = Array.isArray(s.pdfs) ? s.pdfs.length : 0, kc = Array.isArray(s.keypoints) ? s.keypoints.length : 0;
         const lastLog = lc ? s.log[s.log.length - 1] : null;
-        return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '</div>';
+        return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '<div class="cd-actions"><button class="cd-edit" onclick="event.stopPropagation();oe(\'' + s.id + '\')">✏️ Modifica</button></div></div>';
       }).join('');
+      updateSpotBadge();
     }
     function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
     function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
-
-      updateSpotBadge();
     // ========== FORM ====
     function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; opf(); }
-    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; ust(); }
+    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; document.getElementById('fabList').style.display = 'none'; document.getElementById('fabA').style.display = 'none'; ust(); }
     function oe(id) {
       const s = spots.find(x => x.id === id); if (!s) return;
       eid = id; fst = s.status; fnk = s.nokill || ''; plc = true;
@@ -1995,11 +2017,14 @@
       document.getElementById('fLo').value = s.lng;
       document.getElementById('fabA').style.display = 'none';
       document.getElementById('fabH').style.display = 'none';
+      // Close mobile bottom sheet if open
+      var sb = document.querySelector('.sidebar'); if (sb) sb.classList.remove('mobile-open');
       opf(); ust(); unk(); map.closePopup();
     }
     function cf() {
       document.getElementById('fw').classList.remove('on'); document.getElementById('lw').classList.remove('off');
       document.getElementById('fabA').style.display = 'flex'; document.getElementById('fabH').style.display = 'none';
+      document.getElementById('fabList').style.display = '';
       plc = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
     }
     function clr() {
