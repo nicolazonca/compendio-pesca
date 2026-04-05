@@ -1,859 +1,1766 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pesca">
-<meta name="theme-color" content="#1a3a4a">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎣</text></svg>">
-<title>🎣 Compendio di Pesca</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --sea:#1a3a4a;--sea-light:#2a5a6a;--sand:#f4ead5;--sand-dark:#d4c9a8;
-    --coral:#e07a5f;--coral-dark:#c4603f;--kelp:#5a8a6a;--kelp-dark:#3a6a4a;
-    --foam:#fff;--ink:#1a2a2a;--ink-light:#4a5a5a;--shadow:rgba(26,58,74,.15);
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--ink);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;-webkit-tap-highlight-color:transparent}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pesca">
+  <meta name="theme-color" content="#1a3a4a">
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎣</text></svg>">
+  <title>🎣 Compendio di Pesca</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --sea: #1a3a4a;
+      --sea-light: #2a5a6a;
+      --sand: #f4ead5;
+      --sand-dark: #d4c9a8;
+      --coral: #e07a5f;
+      --coral-dark: #c4603f;
+      --kelp: #5a8a6a;
+      --kelp-dark: #3a6a4a;
+      --foam: #fff;
+      --ink: #1a2a2a;
+      --ink-light: #4a5a5a;
+      --shadow: rgba(26, 58, 74, .15);
+    }
 
-  header{background:var(--sea);color:var(--sand);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 4px 20px var(--shadow);z-index:1000}
-  header h1{font-family:'DM Serif Display',serif;font-size:1.2rem;display:flex;align-items:center;gap:6px}
-  .hr{display:flex;gap:8px;align-items:center}
-  .hs{display:flex;gap:10px;font-size:.75rem;font-weight:500}
-  .st{display:flex;align-items:center;gap:4px;opacity:.85}
-  .dt{width:7px;height:7px;border-radius:50%;display:inline-block}
-  .dv{background:var(--kelp)}.dw{background:var(--coral)}
-  .hb{background:0 0;border:1px solid rgba(244,234,213,.3);color:var(--sand);border-radius:5px;padding:5px 8px;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:500;cursor:pointer;transition:.2s}
-  .hb:hover{background:rgba(244,234,213,.1)}
-  #syncStatus{font-size:.75rem;opacity:.8;padding:4px 8px}
-  #loginBtn{background:var(--foam);color:var(--ink);border:none;border-radius:5px;padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.2s}
-  #loginBtn:hover{background:var(--sand)}
-  #userInfo{display:flex;align-items:center;gap:6px;font-size:.7rem;font-weight:500}
-  #userInfo img{width:20px;height:20px;border-radius:50%}
-  #logoutBtn{background:0 0;border:1px solid rgba(244,234,213,.3);color:var(--sand);border-radius:5px;padding:3px 6px;font-family:'DM Sans',sans-serif;font-size:.65rem;cursor:pointer}
-  #logoutBtn:hover{background:rgba(244,234,213,.1)}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
 
-  .main{display:flex;flex:1;min-height:0;position:relative}
-  #map{flex:1;z-index:1}
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--sand);
+      color: var(--ink);
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent
+    }
 
-  /* --- Search bar --- */
-  .search-box{position:absolute;top:10px;left:50px;z-index:1100;display:flex;flex-direction:column;width:280px}
-  .search-row{display:flex;background:var(--foam);border-radius:8px;box-shadow:0 2px 12px var(--shadow);overflow:hidden}
-  .search-row input{flex:1;border:none;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:var(--foam)}
-  .search-row input::placeholder{color:var(--ink-light)}
-  .search-row button{border:none;background:var(--sea);color:var(--sand);padding:10px 12px;cursor:pointer;font-size:.9rem;transition:.2s}
-  .search-results{background:var(--foam);border-radius:0 0 8px 8px;box-shadow:0 4px 12px var(--shadow);margin-top:2px;max-height:240px;overflow-y:auto;display:none}
-  .search-results.open{display:block}
-  .sr-item{padding:10px 14px;cursor:pointer;font-size:.82rem;border-bottom:1px solid var(--sand-dark);transition:.15s;display:flex;align-items:flex-start;gap:8px}
-  .sr-item:last-child{border-bottom:none}
-  .sr-item:hover{background:var(--sand)}
-  .sr-item .sr-icon{flex-shrink:0;margin-top:2px;font-size:.9rem}
-  .sr-item .sr-text{flex:1}
-  .sr-item .sr-name{font-weight:600;color:var(--ink)}
-  .sr-item .sr-addr{font-size:.75rem;color:var(--ink-light);margin-top:1px}
-  .sr-loading,.sr-empty{padding:14px;text-align:center;font-size:.82rem;color:var(--ink-light)}
+    header {
+      background: var(--sea);
+      color: var(--sand);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px var(--shadow);
+      z-index: 1000
+    }
 
-  /* --- Sidebar (desktop) --- */
-  .sidebar{width:350px;background:var(--foam);border-left:1px solid var(--sand-dark);display:flex;flex-direction:column;flex-shrink:0;z-index:500;box-shadow:-4px 0 20px var(--shadow)}
-  .sbh{padding:10px 14px;border-bottom:1px solid var(--sand-dark);display:flex;align-items:center;justify-content:space-between}
-  .sbh h2{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--sea)}
-  .tabs{display:flex;gap:2px;background:var(--sand);border-radius:5px;padding:2px}
-  .tab{padding:4px 10px;border-radius:4px;border:none;background:0 0;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--ink-light);transition:.2s}
-  .tab.a{background:var(--foam);color:var(--sea);box-shadow:0 1px 3px var(--shadow)}
-  .sl{flex:1;overflow-y:auto;padding:8px}
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
 
-  .cd{background:var(--foam);border:1px solid var(--sand-dark);border-radius:7px;padding:10px 12px 10px 16px;margin-bottom:5px;cursor:pointer;transition:.2s;position:relative}
-  .cd:hover{border-color:var(--sea-light);box-shadow:0 2px 8px var(--shadow)}
-  .cd .br{position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 3px 3px 0}
-  .cd.visited .br{background:var(--kelp)}.cd.wishlist .br{background:var(--coral)}
-  .cd h3{font-family:'DM Serif Display',serif;font-size:.9rem}
-  .cd .mt{margin-top:3px;font-size:.72rem;color:var(--ink-light);display:flex;gap:8px;flex-wrap:wrap}
-  .cd .nt{margin-top:5px;font-size:.75rem;color:var(--ink-light);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .em{text-align:center;padding:40px 18px;color:var(--ink-light)}
-  .em .ic{font-size:2.4rem;margin-bottom:10px}.em p{font-size:.83rem;line-height:1.5}
+    .hr {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
 
-  /* --- Form wrapper --- */
-  .fw{display:none;flex-direction:column;height:100%}.fw.on{display:flex}.lw.off{display:none}
-  .fh{padding:10px 14px;border-bottom:1px solid var(--sand-dark);display:flex;align-items:center;justify-content:space-between}
-  .fh h2{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--sea)}
-  .fb{flex:1;overflow-y:auto;padding:12px 14px;-webkit-overflow-scrolling:touch}
-  .fg{margin-bottom:10px}
-  .fg label{display:block;font-size:.73rem;font-weight:600;color:var(--ink-light);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
-  .fg input,.fg textarea{width:100%;padding:9px 10px;border:1px solid var(--sand-dark);border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:var(--foam);transition:border-color .2s;-webkit-appearance:none}
-  .fg input:focus,.fg textarea:focus{outline:none;border-color:var(--sea-light);box-shadow:0 0 0 3px rgba(42,90,106,.1)}
-  .fg textarea{resize:vertical;min-height:55px}
-  .sr2{display:flex;gap:6px}
-  .sb{flex:1;padding:9px 6px;border:2px solid var(--sand-dark);border-radius:5px;background:var(--foam);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s;text-align:center}
-  .sb.sv{border-color:var(--kelp);background:rgba(90,138,106,.1);color:var(--kelp-dark)}
-  .sb.sw{border-color:var(--coral);background:rgba(224,122,95,.1);color:var(--coral-dark)}
-  .ff{padding:10px 14px;border-top:1px solid var(--sand-dark);display:flex;gap:6px}
-  .bn{padding:9px 14px;border-radius:5px;border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s}
-  .bp{background:var(--sea);color:var(--sand);flex:1}.bp:hover{background:var(--sea-light)}
-  .bs{background:var(--sand);color:var(--ink)}.bs:hover{background:var(--sand-dark)}
-  .bd{background:0 0;color:var(--coral);padding:8px 10px}.bd:hover{background:rgba(224,122,95,.1)}
-  .crd{display:flex;gap:6px}.crd input{flex:1}
-  .ch{font-size:.7rem;color:var(--ink-light);margin-top:3px;font-style:italic}
-  .section-divider{border-top:1px solid var(--sand-dark);padding-top:10px;margin-top:4px}
-  .section-label{color:var(--sea);font-size:.8rem;font-weight:600}
+    .hs {
+      display: flex;
+      gap: 10px;
+      font-size: .75rem;
+      font-weight: 500
+    }
 
-  /* --- Log entries --- */
-  .log-list{margin-bottom:6px}
-  .log-entry{background:var(--sand);border-radius:5px;padding:8px 10px;margin-bottom:4px;font-size:.78rem}
-  .log-entry .le-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-  .log-entry .le-date{font-weight:600;color:var(--sea)}
-  .log-entry .le-del{background:none;border:none;color:var(--coral);cursor:pointer;font-size:.75rem;padding:4px 6px}
-  .log-entry .le-row{color:var(--ink-light);line-height:1.4}
-  .log-add{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-  .action-btn{border:none;border-radius:5px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
-  .action-btn.green{background:var(--kelp);color:var(--foam)}.action-btn.green:hover{background:var(--kelp-dark)}
-  .action-btn.orange{background:var(--coral);color:var(--foam)}.action-btn.orange:hover{background:var(--coral-dark)}
-  .action-btn.blue{background:var(--sea-light);color:var(--foam)}.action-btn.blue:hover{background:var(--sea)}
-  .action-btn.active{animation:pu 1.2s ease-in-out infinite}
-  .new-log{background:var(--foam);border:1px solid var(--kelp);border-radius:5px;padding:10px;margin-bottom:8px;display:none}
-  .new-log.open{display:block}
-  .new-log .fg{margin-bottom:8px}
+    .st {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: .85
+    }
 
-  /* --- Keypoints --- */
-  .kp-entry{background:var(--sand);border-radius:5px;padding:7px 10px;margin-bottom:4px;font-size:.78rem;display:flex;align-items:flex-start;gap:6px}
-  .kp-entry .kp-info{flex:1}
-  .kp-entry .kp-name{font-weight:600;color:var(--sea)}
-  .kp-entry .kp-coords{font-size:.7rem;color:var(--ink-light)}
-  .kp-entry .kp-del{background:none;border:none;color:var(--coral);cursor:pointer;font-size:.73rem;padding:4px 6px;flex-shrink:0}
-  .gps-status{font-size:.72rem;color:var(--ink-light);margin-top:3px;font-style:italic}
-  .gps-status.error{color:var(--coral)}
+    .dt {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block
+    }
 
-  /* --- PDF attachments --- */
-  .pdf-list{margin-bottom:6px}
-  .pdf-item{background:var(--sand);border-radius:5px;padding:6px 10px;margin-bottom:4px;font-size:.78rem;display:flex;align-items:center;gap:6px}
-  .pdf-item .pdf-name{flex:1;font-weight:500;color:var(--sea);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .pdf-item button{background:none;border:none;cursor:pointer;font-size:.75rem;padding:4px 6px}
-  .pdf-item .pdf-view{color:var(--sea-light)}.pdf-item .pdf-del{color:var(--coral)}
+    .dv {
+      background: var(--kelp)
+    }
 
-  /* --- FABs --- */
-  .fab{position:fixed;bottom:22px;z-index:999;border:none;border-radius:50px;padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(26,58,74,.3);transition:.2s}
-  .fab:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(26,58,74,.4)}
-  .fab:active{transform:scale(.96)}
-  .fa{background:var(--sea);color:var(--sand);left:16px}
-  .fhi{background:var(--coral);color:var(--foam);left:16px;animation:pu 1.5s ease-in-out infinite;display:none}
-  @keyframes pu{0%,100%{opacity:1}50%{opacity:.75}}
+    .dw {
+      background: var(--coral)
+    }
 
-  /* GPS keypoint FAB */
-  .fab-gps{position:fixed;bottom:22px;right:16px;z-index:999;border:none;border-radius:50px;padding:12px 18px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 18px rgba(224,122,95,.4);transition:.2s;background:var(--coral);color:var(--foam)}
-  .fab-gps:active{transform:scale(.96)}
-  .fab-gps.on{display:flex}
-  .fab-gps.locating{animation:pu 0.8s ease-in-out infinite}
+    .hb {
+      background: 0 0;
+      border: 1px solid rgba(244, 234, 213, .3);
+      color: var(--sand);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: .2s
+    }
 
-  .lt{position:absolute;top:10px;right:12px;z-index:800;background:var(--foam);border-radius:6px;padding:3px;box-shadow:0 2px 10px var(--shadow);display:flex;gap:2px}
-  .lb{padding:5px 8px;border:none;border-radius:4px;background:0 0;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;color:var(--ink-light);transition:.2s}
-  .lb.a{background:var(--sea);color:var(--foam)}
+    .hb:hover {
+      background: rgba(244, 234, 213, .1)
+    }
 
-  .leaflet-popup-content-wrapper{border-radius:7px!important;font-family:'DM Sans',sans-serif!important}
-  .leaflet-popup-content{margin:10px 14px!important;font-size:.82rem!important;line-height:1.45!important}
-  .pt{font-family:'DM Serif Display',serif;font-size:.95rem;margin-bottom:4px}
-  .pb{display:inline-block;padding:2px 7px;border-radius:9px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-  .pb.visited{background:rgba(90,138,106,.15);color:var(--kelp-dark)}
-  .pb.wishlist{background:rgba(224,122,95,.15);color:var(--coral-dark)}
-  .pl{display:inline-block;margin-top:4px;color:var(--sea-light);text-decoration:none;font-weight:500}
-  .pl:hover{text-decoration:underline}
-  .cm{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.25)}
-  .cm span{transform:rotate(45deg);font-size:13px}
-  .cm.visited{background:var(--kelp)}.cm.wishlist{background:var(--coral)}
+    #syncStatus {
+      font-size: .75rem;
+      opacity: .8;
+      padding: 4px 8px
+    }
 
-  /* ===== MOBILE ===== */
-  @media(max-width:768px){
-    header{padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top))}
-    header h1{font-size:1.1rem}
-    .hs{display:none}
-    .main{flex-direction:column}
-    .sidebar{width:100%;height:45%;border-left:none;border-top:1px solid var(--sand-dark);box-shadow:0 -4px 20px var(--shadow)}
-    .sidebar .fw.on~.lw{display:none}
-    .lt{right:10px;top:10px}
-    .search-box{left:48px;width:calc(100% - 160px);top:10px}
-    .fab{bottom:max(16px,env(safe-area-inset-bottom));padding:14px 22px;font-size:.92rem}
-    .fab-gps{bottom:max(16px,env(safe-area-inset-bottom));padding:14px 18px}
-    .ff{padding-bottom:max(10px,env(safe-area-inset-bottom))}
-  }
-</style>
+    #loginBtn {
+      background: var(--foam);
+      color: var(--ink);
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: .2s
+    }
+
+    #loginBtn:hover {
+      background: var(--sand)
+    }
+
+    #userInfo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .7rem;
+      font-weight: 500
+    }
+
+    #userInfo img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%
+    }
+
+    #logoutBtn {
+      background: 0 0;
+      border: 1px solid rgba(244, 234, 213, .3);
+      color: var(--sand);
+      border-radius: 5px;
+      padding: 3px 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .65rem;
+      cursor: pointer
+    }
+
+    #logoutBtn:hover {
+      background: rgba(244, 234, 213, .1)
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      position: relative
+    }
+
+    #map {
+      flex: 1;
+      z-index: 1
+    }
+
+    /* --- Search bar --- */
+    .search-box {
+      position: absolute;
+      top: 10px;
+      left: 50px;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      width: 280px
+    }
+
+    .search-row {
+      display: flex;
+      background: var(--foam);
+      border-radius: 8px;
+      box-shadow: 0 2px 12px var(--shadow);
+      overflow: hidden
+    }
+
+    .search-row input {
+      flex: 1;
+      border: none;
+      padding: 10px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      color: var(--ink);
+      outline: none;
+      background: var(--foam)
+    }
+
+    .search-row input::placeholder {
+      color: var(--ink-light)
+    }
+
+    .search-row button {
+      border: none;
+      background: var(--sea);
+      color: var(--sand);
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: .9rem;
+      transition: .2s
+    }
+
+    .search-results {
+      background: var(--foam);
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 4px 12px var(--shadow);
+      margin-top: 2px;
+      max-height: 240px;
+      overflow-y: auto;
+      display: none
+    }
+
+    .search-results.open {
+      display: block
+    }
+
+    .sr-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: .82rem;
+      border-bottom: 1px solid var(--sand-dark);
+      transition: .15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px
+    }
+
+    .sr-item:last-child {
+      border-bottom: none
+    }
+
+    .sr-item:hover {
+      background: var(--sand)
+    }
+
+    .sr-item .sr-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: .9rem
+    }
+
+    .sr-item .sr-text {
+      flex: 1
+    }
+
+    .sr-item .sr-name {
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .sr-item .sr-addr {
+      font-size: .75rem;
+      color: var(--ink-light);
+      margin-top: 1px
+    }
+
+    .sr-loading,
+    .sr-empty {
+      padding: 14px;
+      text-align: center;
+      font-size: .82rem;
+      color: var(--ink-light)
+    }
+
+    /* --- Sidebar (desktop) --- */
+    .sidebar {
+      width: 350px;
+      background: var(--foam);
+      border-left: 1px solid var(--sand-dark);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 500;
+      box-shadow: -4px 0 20px var(--shadow)
+    }
+
+    .sbh {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--sand-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .sbh h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--sea)
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--sand);
+      border-radius: 5px;
+      padding: 2px
+    }
+
+    .tab {
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: none;
+      background: 0 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--ink-light);
+      transition: .2s
+    }
+
+    .tab.a {
+      background: var(--foam);
+      color: var(--sea);
+      box-shadow: 0 1px 3px var(--shadow)
+    }
+
+    .sl {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px
+    }
+
+    .cd {
+      background: var(--foam);
+      border: 1px solid var(--sand-dark);
+      border-radius: 7px;
+      padding: 10px 12px 10px 16px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      transition: .2s;
+      position: relative
+    }
+
+    .cd:hover {
+      border-color: var(--sea-light);
+      box-shadow: 0 2px 8px var(--shadow)
+    }
+
+    .cd .br {
+      position: absolute;
+      left: 0;
+      top: 7px;
+      bottom: 7px;
+      width: 3px;
+      border-radius: 0 3px 3px 0
+    }
+
+    .cd.visited .br {
+      background: var(--kelp)
+    }
+
+    .cd.wishlist .br {
+      background: var(--coral)
+    }
+
+    .cd h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: .9rem
+    }
+
+    .cd .mt {
+      margin-top: 3px;
+      font-size: .72rem;
+      color: var(--ink-light);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .cd .nt {
+      margin-top: 5px;
+      font-size: .75rem;
+      color: var(--ink-light);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .em {
+      text-align: center;
+      padding: 40px 18px;
+      color: var(--ink-light)
+    }
+
+    .em .ic {
+      font-size: 2.4rem;
+      margin-bottom: 10px
+    }
+
+    .em p {
+      font-size: .83rem;
+      line-height: 1.5
+    }
+
+    /* --- Form wrapper --- */
+    .fw {
+      display: none;
+      flex-direction: column;
+      height: 100%
+    }
+
+    .fw.on {
+      display: flex
+    }
+
+    .lw.off {
+      display: none
+    }
+
+    .fh {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--sand-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .fh h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--sea)
+    }
+
+    .fb {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .fg {
+      margin-bottom: 10px
+    }
+
+    .fg label {
+      display: block;
+      font-size: .73rem;
+      font-weight: 600;
+      color: var(--ink-light);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    .fg input,
+    .fg textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--sand-dark);
+      border-radius: 5px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      color: var(--ink);
+      background: var(--foam);
+      transition: border-color .2s;
+      -webkit-appearance: none
+    }
+
+    .fg input:focus,
+    .fg textarea:focus {
+      outline: none;
+      border-color: var(--sea-light);
+      box-shadow: 0 0 0 3px rgba(42, 90, 106, .1)
+    }
+
+    .fg textarea {
+      resize: vertical;
+      min-height: 55px
+    }
+
+    .sr2 {
+      display: flex;
+      gap: 6px
+    }
+
+    .sb {
+      flex: 1;
+      padding: 9px 6px;
+      border: 2px solid var(--sand-dark);
+      border-radius: 5px;
+      background: var(--foam);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+      text-align: center
+    }
+
+    .sb.sv {
+      border-color: var(--kelp);
+      background: rgba(90, 138, 106, .1);
+      color: var(--kelp-dark)
+    }
+
+    .sb.sw {
+      border-color: var(--coral);
+      background: rgba(224, 122, 95, .1);
+      color: var(--coral-dark)
+    }
+
+    .ff {
+      padding: 10px 14px;
+      border-top: 1px solid var(--sand-dark);
+      display: flex;
+      gap: 6px
+    }
+
+    .bn {
+      padding: 9px 14px;
+      border-radius: 5px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s
+    }
+
+    .bp {
+      background: var(--sea);
+      color: var(--sand);
+      flex: 1
+    }
+
+    .bp:hover {
+      background: var(--sea-light)
+    }
+
+    .bs {
+      background: var(--sand);
+      color: var(--ink)
+    }
+
+    .bs:hover {
+      background: var(--sand-dark)
+    }
+
+    .bd {
+      background: 0 0;
+      color: var(--coral);
+      padding: 8px 10px
+    }
+
+    .bd:hover {
+      background: rgba(224, 122, 95, .1)
+    }
+
+    .crd {
+      display: flex;
+      gap: 6px
+    }
+
+    .crd input {
+      flex: 1
+    }
+
+    .ch {
+      font-size: .7rem;
+      color: var(--ink-light);
+      margin-top: 3px;
+      font-style: italic
+    }
+
+    .section-divider {
+      border-top: 1px solid var(--sand-dark);
+      padding-top: 10px;
+      margin-top: 4px
+    }
+
+    .section-label {
+      color: var(--sea);
+      font-size: .8rem;
+      font-weight: 600
+    }
+
+    /* --- Log entries --- */
+    .log-list {
+      margin-bottom: 6px
+    }
+
+    .log-entry {
+      background: var(--sand);
+      border-radius: 5px;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      font-size: .78rem
+    }
+
+    .log-entry .le-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px
+    }
+
+    .log-entry .le-date {
+      font-weight: 600;
+      color: var(--sea)
+    }
+
+    .log-entry .le-del {
+      background: none;
+      border: none;
+      color: var(--coral);
+      cursor: pointer;
+      font-size: .75rem;
+      padding: 4px 6px
+    }
+
+    .log-entry .le-row {
+      color: var(--ink-light);
+      line-height: 1.4
+    }
+
+    .log-add {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px
+    }
+
+    .action-btn {
+      border: none;
+      border-radius: 5px;
+      padding: 8px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .action-btn.green {
+      background: var(--kelp);
+      color: var(--foam)
+    }
+
+    .action-btn.green:hover {
+      background: var(--kelp-dark)
+    }
+
+    .action-btn.orange {
+      background: var(--coral);
+      color: var(--foam)
+    }
+
+    .action-btn.orange:hover {
+      background: var(--coral-dark)
+    }
+
+    .action-btn.blue {
+      background: var(--sea-light);
+      color: var(--foam)
+    }
+
+    .action-btn.blue:hover {
+      background: var(--sea)
+    }
+
+    .action-btn.active {
+      animation: pu 1.2s ease-in-out infinite
+    }
+
+    .new-log {
+      background: var(--foam);
+      border: 1px solid var(--kelp);
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: none
+    }
+
+    .new-log.open {
+      display: block
+    }
+
+    .new-log .fg {
+      margin-bottom: 8px
+    }
+
+    /* --- Keypoints --- */
+    .kp-entry {
+      background: var(--sand);
+      border-radius: 5px;
+      padding: 7px 10px;
+      margin-bottom: 4px;
+      font-size: .78rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px
+    }
+
+    .kp-entry .kp-info {
+      flex: 1
+    }
+
+    .kp-entry .kp-name {
+      font-weight: 600;
+      color: var(--sea)
+    }
+
+    .kp-entry .kp-coords {
+      font-size: .7rem;
+      color: var(--ink-light)
+    }
+
+    .kp-entry .kp-del {
+      background: none;
+      border: none;
+      color: var(--coral);
+      cursor: pointer;
+      font-size: .73rem;
+      padding: 4px 6px;
+      flex-shrink: 0
+    }
+
+    .gps-status {
+      font-size: .72rem;
+      color: var(--ink-light);
+      margin-top: 3px;
+      font-style: italic
+    }
+
+    .gps-status.error {
+      color: var(--coral)
+    }
+
+    /* --- PDF attachments --- */
+    .pdf-list {
+      margin-bottom: 6px
+    }
+
+    .pdf-item {
+      background: var(--sand);
+      border-radius: 5px;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .pdf-item .pdf-name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--sea);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .pdf-item button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: .75rem;
+      padding: 4px 6px
+    }
+
+    .pdf-item .pdf-view {
+      color: var(--sea-light)
+    }
+
+    .pdf-item .pdf-del {
+      color: var(--coral)
+    }
+
+    /* --- FABs --- */
+    .fab {
+      position: fixed;
+      bottom: 22px;
+      z-index: 999;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 18px rgba(26, 58, 74, .3);
+      transition: .2s
+    }
+
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(26, 58, 74, .4)
+    }
+
+    .fab:active {
+      transform: scale(.96)
+    }
+
+    .fa {
+      background: var(--sea);
+      color: var(--sand);
+      left: 16px
+    }
+
+    .fhi {
+      background: var(--coral);
+      color: var(--foam);
+      left: 16px;
+      animation: pu 1.5s ease-in-out infinite;
+      display: none
+    }
+
+    @keyframes pu {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .75
+      }
+    }
+
+    /* GPS keypoint FAB */
+    .fab-gps {
+      position: fixed;
+      bottom: 22px;
+      right: 16px;
+      z-index: 999;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 18px rgba(224, 122, 95, .4);
+      transition: .2s;
+      background: var(--coral);
+      color: var(--foam)
+    }
+
+    .fab-gps:active {
+      transform: scale(.96)
+    }
+
+    .fab-gps.on {
+      display: flex
+    }
+
+    .fab-gps.locating {
+      animation: pu 0.8s ease-in-out infinite
+    }
+
+    .lt {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 800;
+      background: var(--foam);
+      border-radius: 6px;
+      padding: 3px;
+      box-shadow: 0 2px 10px var(--shadow);
+      display: flex;
+      gap: 2px
+    }
+
+    .lb {
+      padding: 5px 8px;
+      border: none;
+      border-radius: 4px;
+      background: 0 0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--ink-light);
+      transition: .2s
+    }
+
+    .lb.a {
+      background: var(--sea);
+      color: var(--foam)
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 7px !important;
+      font-family: 'DM Sans', sans-serif !important
+    }
+
+    .leaflet-popup-content {
+      margin: 10px 14px !important;
+      font-size: .82rem !important;
+      line-height: 1.45 !important
+    }
+
+    .pt {
+      font-family: 'DM Serif Display', serif;
+      font-size: .95rem;
+      margin-bottom: 4px
+    }
+
+    .pb {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 9px;
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 4px
+    }
+
+    .pb.visited {
+      background: rgba(90, 138, 106, .15);
+      color: var(--kelp-dark)
+    }
+
+    .pb.wishlist {
+      background: rgba(224, 122, 95, .15);
+      color: var(--coral-dark)
+    }
+
+    .pl {
+      display: inline-block;
+      margin-top: 4px;
+      color: var(--sea-light);
+      text-decoration: none;
+      font-weight: 500
+    }
+
+    .pl:hover {
+      text-decoration: underline
+    }
+
+    .cm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .25)
+    }
+
+    .cm span {
+      transform: rotate(45deg);
+      font-size: 13px
+    }
+
+    .cm.visited {
+      background: var(--kelp)
+    }
+
+    .cm.wishlist {
+      background: var(--coral)
+    }
+
+    /* ===== MOBILE ===== */
+    @media(max-width:768px) {
+      header {
+        padding: 8px 12px;
+        padding-top: max(8px, env(safe-area-inset-top))
+      }
+
+      header h1 {
+        font-size: 1.1rem
+      }
+
+      .hs {
+        display: none
+      }
+
+      .main {
+        flex-direction: column
+      }
+
+      .sidebar {
+        width: 100%;
+        height: 45%;
+        border-left: none;
+        border-top: 1px solid var(--sand-dark);
+        box-shadow: 0 -4px 20px var(--shadow)
+      }
+
+      .sidebar .fw.on~.lw {
+        display: none
+      }
+
+      .lt {
+        right: 10px;
+        top: 10px
+      }
+
+      .search-box {
+        left: 48px;
+        width: calc(100% - 160px);
+        top: 10px
+      }
+
+      .fab {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        padding: 14px 22px;
+        font-size: .92rem
+      }
+
+      .fab-gps {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        padding: 14px 18px
+      }
+
+      .ff {
+        padding-bottom: max(10px, env(safe-area-inset-bottom))
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header>
-  <h1>🎣 Compendio di Pesca</h1>
-  <div class="hr">
-    <div class="hs">
-      <span class="st"><span class="dt dv"></span><span id="cV">0</span> visitati</span>
-      <span class="st"><span class="dt dw"></span><span id="cW">0</span> wishlist</span>
-      <span id="syncStatus" title="Stato sincronizzazione"></span>
+  <header>
+    <h1>🎣 Compendio di Pesca</h1>
+    <div class="hr">
+      <div class="hs">
+        <span class="st"><span class="dt dv"></span><span id="cV">0</span> visitati</span>
+        <span class="st"><span class="dt dw"></span><span id="cW">0</span> wishlist</span>
+        <span id="syncStatus" title="Stato sincronizzazione"></span>
+      </div>
+      <div id="authArea">
+        <button id="loginBtn" onclick="googleLogin()" style="display:none">🔑 Accedi con Google</button>
+        <span id="userInfo" style="display:none"><img id="userPhoto" src="" alt=""><span id="userName"></span><button
+            id="logoutBtn" onclick="doLogout()">Esci</button></span>
+      </div>
+      <button class="hb" onclick="expJSON()">↗ Esporta</button>
+      <button class="hb" onclick="document.getElementById('imp').click()">↙ Importa</button>
+      <button class="hb" onclick="expKML()">🌍 KML</button>
     </div>
-    <div id="authArea">
-      <button id="loginBtn" onclick="googleLogin()" style="display:none">🔑 Accedi con Google</button>
-      <span id="userInfo" style="display:none"><img id="userPhoto" src="" alt=""><span id="userName"></span><button id="logoutBtn" onclick="doLogout()">Esci</button></span>
+  </header>
+  <div class="main">
+    <div id="map"></div>
+
+    <div class="search-box" id="searchBox">
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="Cerca un luogo..." autocomplete="off">
+        <button onclick="doSearch()">🔍</button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
     </div>
-    <button class="hb" onclick="expJSON()">↗ Esporta</button>
-    <button class="hb" onclick="document.getElementById('imp').click()">↙ Importa</button>
-    <button class="hb" onclick="expKML()">🌍 KML</button>
-  </div>
-</header>
-<div class="main">
-  <div id="map"></div>
 
-  <div class="search-box" id="searchBox">
-    <div class="search-row">
-      <input type="text" id="searchInput" placeholder="Cerca un luogo..." autocomplete="off">
-      <button onclick="doSearch()">🔍</button>
+    <div class="lt" id="lt">
+      <button class="lb" onclick="setLy('road',this)">Mappa</button>
+      <button class="lb a" onclick="setLy('satellite',this)">Satellite</button>
+      <button class="lb" onclick="setLy('terrain',this)">Terreno</button>
     </div>
-    <div class="search-results" id="searchResults"></div>
-  </div>
 
-  <div class="lt" id="lt">
-    <button class="lb" onclick="setLy('road',this)">Mappa</button>
-    <button class="lb a" onclick="setLy('satellite',this)">Satellite</button>
-    <button class="lb" onclick="setLy('terrain',this)">Terreno</button>
-  </div>
+    <div class="sidebar">
+      <div class="lw" id="lw">
+        <div class="sbh">
+          <h2>I miei spot</h2>
+          <div class="tabs">
+            <button class="tab a" onclick="sf('all',this)">Tutti</button>
+            <button class="tab" onclick="sf('visited',this)">Visitati</button>
+            <button class="tab" onclick="sf('wishlist',this)">Wishlist</button>
+          </div>
+        </div>
+        <div class="sl" id="sl"></div>
+      </div>
+      <div class="fw" id="fw">
+        <div class="fh">
+          <h2 id="ft">Nuovo spot</h2><button class="bn bs" onclick="cf()">✕</button>
+        </div>
+        <div class="fb">
+          <div class="fg"><label>Nome Spot</label><input id="fN" placeholder="Es. Torrente Chiese - Zona A"></div>
+          <div class="fg"><label>Luogo</label><input id="fLu" placeholder="Es. Lago di Garda, Foce del Sele..."></div>
+          <div class="fg"><label>Regione</label><input id="fRe" placeholder="Es. Lombardia, Trentino..."></div>
+          <div class="fg"><label>Stato</label>
+            <div class="sr2"><button class="sb" id="bV" onclick="pst('visited')">✅ Visitato</button><button class="sb"
+                id="bW" onclick="pst('wishlist')">📌 Wishlist</button></div>
+          </div>
+          <div class="fg"><label>Tipo di pesca</label><input id="fT" placeholder="Spinning, bolognese, surfcasting...">
+          </div>
+          <div class="fg"><label>No Kill</label>
+            <div class="sr2"><button class="sb" id="bNK_y" onclick="pnk('si')">✅ Sì</button><button class="sb"
+                id="bNK_n" onclick="pnk('no')">❌ No</button><button class="sb" id="bNK_u" onclick="pnk('')">❓
+                N/D</button></div>
+          </div>
+          <div class="fg"><label>Pesci / specie</label><input id="fF" placeholder="Trota, temolo, cavedano..."></div>
+          <div class="fg"><label>Luogo per tesserino</label><input id="fLT" placeholder="Bar Sport, Tabaccheria...">
+          </div>
+          <div class="fg"><label>Tel</label><input id="fTel" type="tel" placeholder="Telefono riferimento"></div>
+          <div class="fg"><label>Persona di riferimento</label><input id="fPR" placeholder="Nome del contatto locale">
+          </div>
 
-  <div class="sidebar">
-    <div class="lw" id="lw">
-      <div class="sbh"><h2>I miei spot</h2>
-        <div class="tabs">
-          <button class="tab a" onclick="sf('all',this)">Tutti</button>
-          <button class="tab" onclick="sf('visited',this)">Visitati</button>
-          <button class="tab" onclick="sf('wishlist',this)">Wishlist</button>
+          <div class="fg section-divider"><label class="section-label">📋 Diario di pesca</label></div>
+          <div class="log-list" id="logList"></div>
+          <div class="log-add"><button class="action-btn green" onclick="toggleNewLog()">＋ Nuova uscita</button></div>
+          <div class="new-log" id="newLog">
+            <div class="fg"><label>Data uscita</label><input id="nlDate" type="date"></div>
+            <div class="fg"><label>Catture</label><input id="nlCatture" placeholder="Es. 3 trote fario, 1 temolo...">
+            </div>
+            <div class="fg"><label>Esca</label><input id="nlEsca" placeholder="Es. camola, TK, artificiale..."></div>
+            <div class="fg"><label>Note uscita</label><textarea id="nlNote"
+                placeholder="Meteo, livello acqua, orari..."></textarea></div>
+            <div style="display:flex;gap:6px;margin-top:6px"><button class="bn bp"
+                style="padding:7px 14px;font-size:.8rem" onclick="addLogEntry()">Aggiungi</button><button class="bn bs"
+                style="padding:7px 14px;font-size:.8rem" onclick="toggleNewLog()">Annulla</button></div>
+          </div>
+
+          <div class="fg section-divider"><label class="section-label">📎 Allegati PDF</label></div>
+          <div class="pdf-list" id="pdfList"></div>
+          <div class="fg"><button class="action-btn blue" onclick="document.getElementById('pdfFileInput').click()">📎
+              Allega PDF</button><input type="file" id="pdfFileInput" accept=".pdf" style="display:none"
+              onchange="handlePdfUpload(event)"></div>
+
+          <div class="fg section-divider"><label class="section-label">📍 Keypoints</label></div>
+          <div id="kpList"></div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+            <button class="action-btn orange" id="kpGpsBtn" onclick="addKpFromGPS()">📡 Segna posizione GPS</button>
+            <button class="action-btn" style="background:var(--sand-dark);color:var(--ink)" onclick="addKpFromMap()">🗺️
+              Da mappa</button>
+          </div>
+          <div class="gps-status" id="gpsStatus"></div>
+
+          <div class="fg"><label>Link</label><input id="fL" type="url" placeholder="https://..."></div>
+          <div class="fg"><label>Note</label><textarea id="fNo"
+              placeholder="Accesso, parcheggio, consigli..."></textarea></div>
+          <div class="fg"><label>Coordinate spot</label>
+            <div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number"
+                step="any" placeholder="Lng"></div>
+            <div class="ch" id="cH">Clicca sulla mappa o usa GPS</div>
+          </div>
+        </div>
+        <div class="ff">
+          <button class="bn bd" id="db" style="display:none" onclick="ds()">Elimina</button>
+          <button class="bn bs" id="pdfB" style="display:none" onclick="if(eid)expPDF(eid)">📄 PDF</button>
+          <button class="bn bs" onclick="cf()">Annulla</button>
+          <button class="bn bp" onclick="svSpot()">Salva</button>
         </div>
       </div>
-      <div class="sl" id="sl"></div>
-    </div>
-    <div class="fw" id="fw">
-      <div class="fh"><h2 id="ft">Nuovo spot</h2><button class="bn bs" onclick="cf()">✕</button></div>
-      <div class="fb">
-        <div class="fg"><label>Nome Spot</label><input id="fN" placeholder="Es. Torrente Chiese - Zona A"></div>
-        <div class="fg"><label>Luogo</label><input id="fLu" placeholder="Es. Lago di Garda, Foce del Sele..."></div>
-        <div class="fg"><label>Regione</label><input id="fRe" placeholder="Es. Lombardia, Trentino..."></div>
-        <div class="fg"><label>Stato</label><div class="sr2"><button class="sb" id="bV" onclick="pst('visited')">✅ Visitato</button><button class="sb" id="bW" onclick="pst('wishlist')">📌 Wishlist</button></div></div>
-        <div class="fg"><label>Tipo di pesca</label><input id="fT" placeholder="Spinning, bolognese, surfcasting..."></div>
-        <div class="fg"><label>No Kill</label><div class="sr2"><button class="sb" id="bNK_y" onclick="pnk('si')">✅ Sì</button><button class="sb" id="bNK_n" onclick="pnk('no')">❌ No</button><button class="sb" id="bNK_u" onclick="pnk('')">❓ N/D</button></div></div>
-        <div class="fg"><label>Pesci / specie</label><input id="fF" placeholder="Trota, temolo, cavedano..."></div>
-        <div class="fg"><label>Luogo per tesserino</label><input id="fLT" placeholder="Bar Sport, Tabaccheria..."></div>
-        <div class="fg"><label>Tel</label><input id="fTel" type="tel" placeholder="Telefono riferimento"></div>
-        <div class="fg"><label>Persona di riferimento</label><input id="fPR" placeholder="Nome del contatto locale"></div>
-
-        <div class="fg section-divider"><label class="section-label">📋 Diario di pesca</label></div>
-        <div class="log-list" id="logList"></div>
-        <div class="log-add"><button class="action-btn green" onclick="toggleNewLog()">＋ Nuova uscita</button></div>
-        <div class="new-log" id="newLog">
-          <div class="fg"><label>Data uscita</label><input id="nlDate" type="date"></div>
-          <div class="fg"><label>Catture</label><input id="nlCatture" placeholder="Es. 3 trote fario, 1 temolo..."></div>
-          <div class="fg"><label>Esca</label><input id="nlEsca" placeholder="Es. camola, TK, artificiale..."></div>
-          <div class="fg"><label>Note uscita</label><textarea id="nlNote" placeholder="Meteo, livello acqua, orari..."></textarea></div>
-          <div style="display:flex;gap:6px;margin-top:6px"><button class="bn bp" style="padding:7px 14px;font-size:.8rem" onclick="addLogEntry()">Aggiungi</button><button class="bn bs" style="padding:7px 14px;font-size:.8rem" onclick="toggleNewLog()">Annulla</button></div>
-        </div>
-
-        <div class="fg section-divider"><label class="section-label">📎 Allegati PDF</label></div>
-        <div class="pdf-list" id="pdfList"></div>
-        <div class="fg"><button class="action-btn blue" onclick="document.getElementById('pdfFileInput').click()">📎 Allega PDF</button><input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="handlePdfUpload(event)"></div>
-
-        <div class="fg section-divider"><label class="section-label">📍 Keypoints</label></div>
-        <div id="kpList"></div>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
-          <button class="action-btn orange" id="kpGpsBtn" onclick="addKpFromGPS()">📡 Segna posizione GPS</button>
-          <button class="action-btn" style="background:var(--sand-dark);color:var(--ink)" onclick="addKpFromMap()">🗺️ Da mappa</button>
-        </div>
-        <div class="gps-status" id="gpsStatus"></div>
-
-        <div class="fg"><label>Link</label><input id="fL" type="url" placeholder="https://..."></div>
-        <div class="fg"><label>Note</label><textarea id="fNo" placeholder="Accesso, parcheggio, consigli..."></textarea></div>
-        <div class="fg"><label>Coordinate spot</label><div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number" step="any" placeholder="Lng"></div><div class="ch" id="cH">Clicca sulla mappa o usa GPS</div></div>
-      </div>
-      <div class="ff">
-        <button class="bn bd" id="db" style="display:none" onclick="ds()">Elimina</button>
-        <button class="bn bs" id="pdfB" style="display:none" onclick="if(eid)expPDF(eid)">📄 PDF</button>
-        <button class="bn bs" onclick="cf()">Annulla</button>
-        <button class="bn bp" onclick="svSpot()">Salva</button>
-      </div>
     </div>
   </div>
-</div>
-<button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
-<div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
-<button class="fab-gps" id="fabGps" onclick="addKpFromGPS()">📡 Segna posizione</button>
-<input type="file" id="imp" accept=".json" style="display:none" onchange="handleImp(event)">
+  <button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
+  <div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
+  <button class="fab-gps" id="fabGps" onclick="addKpFromGPS()">📡 Segna posizione</button>
+  <input type="file" id="imp" accept=".json" style="display:none" onchange="handleImp(event)">
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<!-- Storage non necessario: PDF salvati come base64 in Firestore -->
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- Storage non necessario: PDF salvati come base64 in Firestore -->
 
-<script>
-// ========== FIREBASE CONFIG & INIT ==========
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+  <script>
+    // ========== FIREBASE CONFIG & INIT ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3Cn98yMBJ5RXsFM7MMo8104HGVHvVgb8",
+      authDomain: "compendio-pesca.firebaseapp.com",
+      projectId: "compendio-pesca",
+      storageBucket: "compendio-pesca.firebasestorage.app",
+      messagingSenderId: "666415378343",
+      appId: "1:666415378343:web:bc308f998db8d27070d082"
+    };
 
-let useFirebase = false;
-let db = null;
-// Storage rimosso: PDF in base64 dentro Firestore
-let auth = null;
-let uid = null;
+    let useFirebase = false;
+    let db = null;
+    // Storage rimosso: PDF in base64 dentro Firestore
+    let auth = null;
+    let uid = null;
 
-// Check if Firebase config is set
-if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    auth = firebase.auth();
-    useFirebase = true;
-  } catch (err) {
-    console.error("Firebase init error:", err);
-    useFirebase = false;
-  }
-} else {
-  alert("Firebase non configurato. Modalita offline (localStorage). Configura firebase-config prima di usare Firebase.");
-}
+    // Check if Firebase config is set
+    if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        auth = firebase.auth();
+        useFirebase = true;
+      } catch (err) {
+        console.error("Firebase init error:", err);
+        useFirebase = false;
+      }
+    } else {
+      alert("Firebase non configurato. Modalita offline (localStorage). Configura firebase-config prima di usare Firebase.");
+    }
 
-// ========== GLOBALS ==========
-let spots = [], eid = null, plc = false, flt = 'all', mks = {}, tmk = null, fst = 'wishlist', fnk = '', searchMk = null;
-let curLog = [], curPdfs = [], curKps = [], kpMapMode = false, kpMks = [];
+    // ========== GLOBALS ==========
+    let spots = [], eid = null, plc = false, flt = 'all', mks = {}, tmk = null, fst = 'wishlist', fnk = '', searchMk = null;
+    let curLog = [], curPdfs = [], curKps = [], kpMapMode = false, kpMks = [];
 
-// ========== STORAGE FUNCTIONS ==========
-function ldLocal() {
-  try {
-    const s = localStorage.getItem('fishing-spots');
-    if (s) spots = JSON.parse(s);
-  } catch (e) {
-    console.error("LocalStorage load error:", e);
-  }
-}
-
-function ld() {
-  if (useFirebase && uid) {
-    // Firebase listener will handle loading
-  } else {
-    ldLocal();
-  }
-}
-
-function sav() {
-  // Always save to localStorage as backup
-  try {
-    localStorage.setItem('fishing-spots', JSON.stringify(spots));
-  } catch (e) {
-    console.error("LocalStorage save error:", e);
-  }
-}
-
-function gid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
-
-// ========== MAP ====
-const map = L.map('map', { zoomControl: true }).setView([43.5, 12], 6);
-const lys = {
-  satellite: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }),
-  road: L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }),
-  terrain: L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' })
-};
-const labLy = L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', { maxZoom: 20 });
-let aLy = lys.satellite; aLy.addTo(map); labLy.addTo(map);
-
-function setLy(n, b) {
-  map.removeLayer(aLy); map.removeLayer(labLy);
-  aLy = lys[n]; aLy.addTo(map);
-  if (n !== 'road') labLy.addTo(map);
-  document.querySelectorAll('.lb').forEach(x => x.classList.remove('a'));
-  b.classList.add('a');
-}
-
-// ========== SEARCH (Nominatim) ====
-let searchTimer = null;
-const searchInput = document.getElementById('searchInput');
-const searchResults = document.getElementById('searchResults');
-
-searchInput.addEventListener('input', function() {
-  clearTimeout(searchTimer);
-  const q = this.value.trim();
-  if (q.length < 2) { searchResults.classList.remove('open'); return; }
-  searchTimer = setTimeout(() => doSearch(), 400);
-});
-searchInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); doSearch(); }
-  if (e.key === 'Escape') { searchResults.classList.remove('open'); this.blur(); }
-});
-document.addEventListener('click', function(e) {
-  if (!document.getElementById('searchBox').contains(e.target)) searchResults.classList.remove('open');
-});
-
-async function doSearch() {
-  const q = searchInput.value.trim(); if (q.length < 2) return;
-  searchResults.innerHTML = '<div class="sr-loading">Cerco...</div>';
-  searchResults.classList.add('open');
-  try {
-    const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=8&q=' + encodeURIComponent(q), { headers: { 'Accept-Language': 'it' } });
-    const data = await resp.json();
-    if (!data.length) { searchResults.innerHTML = '<div class="sr-empty">Nessun risultato</div>'; return; }
-    searchResults.innerHTML = data.map((r, i) => {
-      const icon = getPlaceIcon(r.type, r.class), name = r.display_name.split(',')[0], addr = r.display_name.split(',').slice(1, 3).join(',').trim();
-      return '<div class="sr-item" onclick="pickResult(' + i + ')"><div class="sr-icon">' + icon + '</div><div class="sr-text"><div class="sr-name">' + esc(name) + '</div><div class="sr-addr">' + esc(addr) + '</div></div></div>';
-    }).join('');
-    window._searchData = data;
-  } catch (err) { searchResults.innerHTML = '<div class="sr-empty">Errore di rete</div>'; }
-}
-
-function getPlaceIcon(type, cls) {
-  if (cls === 'waterway' || type === 'water' || type === 'bay' || type === 'strait') return '🌊';
-  if (cls === 'natural' && (type === 'beach' || type === 'coastline')) return '🏖️';
-  if (cls === 'natural') return '🏔️';
-  if (type === 'island' || type === 'islet') return '🏝️';
-  if (type === 'village' || type === 'town' || type === 'city' || type === 'hamlet') return '🏘️';
-  if (cls === 'harbour' || type === 'marina' || type === 'port') return '⚓';
-  return '📍';
-}
-
-function pickResult(i) {
-  const r = window._searchData[i]; if (!r) return;
-  const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
-  if (searchMk) map.removeLayer(searchMk);
-  const zoom = r.boundingbox ? getBoundsZoom(r.boundingbox) : 13;
-  map.flyTo([lat, lng], zoom, { duration: .7 });
-  searchMk = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#1a3a4a;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3);animation:pu 1s ease-in-out infinite"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(map);
-  if (plc && !kpMapMode) {
-    document.getElementById('fLa').value = lat.toFixed(6);
-    document.getElementById('fLo').value = lng.toFixed(6);
-    document.getElementById('cH').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
-    if (!document.getElementById('fN').value.trim()) document.getElementById('fN').value = r.display_name.split(',')[0];
-  }
-  searchResults.classList.remove('open');
-  searchInput.value = r.display_name.split(',')[0];
-  setTimeout(() => { if (searchMk) { map.removeLayer(searchMk); searchMk = null; } }, 8000);
-}
-
-function getBoundsZoom(bb) {
-  const d = Math.max(Math.abs(parseFloat(bb[1]) - parseFloat(bb[0])), Math.abs(parseFloat(bb[3]) - parseFloat(bb[2])));
-  if (d > 10) return 5; if (d > 5) return 7; if (d > 1) return 9; if (d > .3) return 11; if (d > .05) return 13; if (d > .01) return 15; return 16;
-}
-
-// ========== MARKERS ====
-function mkI(s) { return L.divIcon({ className: '', html: '<div class="cm ' + s + '"><span>' + (s === 'visited' ? '🐟' : '📌') + '</span></div>', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30] }); }
-
-function amk(sp) {
-  if (mks[sp.id]) { if (mks[sp.id]._kpMks) mks[sp.id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[sp.id]); }
-  const m = L.marker([sp.lat, sp.lng], { icon: mkI(sp.status) }).addTo(map);
-  let h = '<div class="pt">' + esc(sp.name) + '</div><span class="pb ' + sp.status + '">' + (sp.status === 'visited' ? '✅ Visitato' : '📌 Wishlist') + '</span>';
-  if (sp.luogo) h += '<br><small>📍 ' + esc(sp.luogo) + '</small>';
-  if (sp.regione) h += '<br><small>🗺️ ' + esc(sp.regione) + '</small>';
-  if (sp.type) h += '<br><small>🎣 ' + esc(sp.type) + '</small>';
-  if (sp.nokill === 'si') h += '<br><small>🟢 No Kill</small>';
-  if (sp.nokill === 'no') h += '<br><small>🔴 Kill consentito</small>';
-  if (sp.fish) h += '<br><small>🐟 ' + esc(sp.fish) + '</small>';
-  if (sp.luogoTess) h += '<br><small>🎫 Tesserino: ' + esc(sp.luogoTess) + '</small>';
-  if (sp.persona) h += '<br><small>👤 ' + esc(sp.persona) + '</small>';
-  if (sp.tel) h += '<br><small>📞 <a href="tel:' + esc(sp.tel) + '">' + esc(sp.tel) + '</a></small>';
-  const lg = Array.isArray(sp.log) ? sp.log : [];
-  if (lg.length) { h += '<div style="margin-top:6px;border-top:1px solid #ddd;padding-top:4px"><small style="font-weight:600;color:#1a3a4a">📋 ' + lg.length + ' uscit' + (lg.length === 1 ? 'a' : 'e') + '</small>'; lg.slice(-2).forEach(e => { h += '<div style="margin:3px 0;font-size:.75rem"><b>' + esc(e.date) + '</b>' + (e.catture ? ' — ' + esc(e.catture) : '') + '</div>'; }); h += '</div>'; }
-  const pfs = Array.isArray(sp.pdfs) ? sp.pdfs : [];
-  if (pfs.length) h += '<br><small>📎 ' + pfs.length + ' PDF allegat' + (pfs.length > 1 ? 'i' : 'o') + '</small>';
-  const kps2 = Array.isArray(sp.keypoints) ? sp.keypoints : [];
-  if (kps2.length) h += '<br><small>📍 ' + kps2.length + ' keypoint' + (kps2.length > 1 ? 's' : '') + '</small>';
-  if (sp.notes) h += '<p style="margin-top:5px;color:#4a5a5a;font-size:.78rem">' + esc(sp.notes) + '</p>';
-  if (sp.link) h += '<a class="pl" href="' + esc(sp.link) + '" target="_blank">🔗 Link</a><br>';
-  h += '<div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap"><a class="pl" href="#" onclick="event.preventDefault();oe(\'' + sp.id + '\')">✏️ Modifica</a><a class="pl" href="#" onclick="event.preventDefault();expPDF(\'' + sp.id + '\')">📄 Stampa</a></div>';
-  m.bindPopup(h, { maxWidth: 280 }); mks[sp.id] = m;
-  // Keypoint markers
-  if (kps2.length) { m._kpMks = []; kps2.forEach(k => { const km = L.circleMarker([k.lat, k.lng], { radius: 5, color: '#e07a5f', fillColor: '#fff', fillOpacity: .9, weight: 2 }).addTo(map); km.bindTooltip(k.name, { permanent: false, direction: 'top', offset: [0, -6] }); km.bindPopup('<b>🔹 ' + esc(k.name) + '</b><br><small>' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</small><br><small style="color:#888">' + esc(sp.name) + '</small>'); m._kpMks.push(km); }); }
-}
-function rmk(id) { if (mks[id]) { if (mks[id]._kpMks) mks[id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[id]); delete mks[id]; } }
-
-map.on('click', function(e) {
-  if (!plc) return;
-  if (kpMapMode) {
-    const name = prompt('Nome keypoint:');
-    if (!name) return;
-    curKps.push({ name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, id: Date.now().toString(36) });
-    renKps(); kpMapMode = false;
-    document.getElementById('fabH').style.display = 'none';
-    if (document.getElementById('fw').classList.contains('on')) document.getElementById('fabGps').classList.add('on');
-    return;
-  }
-  document.getElementById('fLa').value = e.latlng.lat.toFixed(6);
-  document.getElementById('fLo').value = e.latlng.lng.toFixed(6);
-  document.getElementById('cH').textContent = e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
-  if (tmk) map.removeLayer(tmk);
-  tmk = L.circleMarker(e.latlng, { radius: 7, color: '#e07a5f', fillColor: '#e07a5f', fillOpacity: .5 }).addTo(map);
-});
-
-// ========== SIDEBAR LIST ====
-function ren() {
-  const fl = flt === 'all' ? spots : spots.filter(s => s.status === flt);
-  document.getElementById('cV').textContent = spots.filter(s => s.status === 'visited').length;
-  document.getElementById('cW').textContent = spots.filter(s => s.status === 'wishlist').length;
-  const el = document.getElementById('sl');
-  if (!fl.length) { el.innerHTML = '<div class="em"><div class="ic">🌊</div><p>' + (flt === 'all' ? 'Nessuno spot ancora.<br>Tocca "Aggiungi spot" per iniziare!' : 'Nessuno spot qui.') + '</p></div>'; return; }
-  el.innerHTML = fl.map(s => {
-    const lc = Array.isArray(s.log) ? s.log.length : 0, pc = Array.isArray(s.pdfs) ? s.pdfs.length : 0, kc = Array.isArray(s.keypoints) ? s.keypoints.length : 0;
-    const lastLog = lc ? s.log[s.log.length - 1] : null;
-    return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '</div>';
-  }).join('');
-}
-function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
-function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
-
-// ========== FORM ====
-function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; document.getElementById('fabGps').classList.add('on'); opf(); }
-function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; ust(); }
-function oe(id) {
-  const s = spots.find(x => x.id === id); if (!s) return;
-  eid = id; fst = s.status; fnk = s.nokill || ''; plc = true;
-  document.getElementById('fN').value = s.name;
-  document.getElementById('fLu').value = s.luogo || '';
-  document.getElementById('fRe').value = s.regione || '';
-  document.getElementById('fT').value = s.type || '';
-  document.getElementById('fF').value = s.fish || '';
-  document.getElementById('fLT').value = s.luogoTess || '';
-  document.getElementById('fTel').value = s.tel || '';
-  document.getElementById('fPR').value = s.persona || '';
-  if (Array.isArray(s.log)) { curLog = s.log.slice(); }
-  else { curLog = []; if (s.memoria || s.catture || s.esca || s.date) { curLog.push({ date: s.date || 'N/D', catture: s.catture || '', esca: s.esca || '', note: s.memoria || '', id: Date.now().toString(36) }); } }
-  renLog();
-  curPdfs = Array.isArray(s.pdfs) ? s.pdfs.slice() : []; renPdfs();
-  curKps = Array.isArray(s.keypoints) ? s.keypoints.slice() : []; renKps();
-  document.getElementById('fL').value = s.link || '';
-  document.getElementById('fNo').value = s.notes || '';
-  document.getElementById('fLa').value = s.lat;
-  document.getElementById('fLo').value = s.lng;
-  document.getElementById('fabA').style.display = 'none';
-  document.getElementById('fabH').style.display = 'none';
-  document.getElementById('fabGps').classList.add('on');
-  opf(); ust(); unk(); map.closePopup();
-}
-function cf() {
-  document.getElementById('fw').classList.remove('on'); document.getElementById('lw').classList.remove('off');
-  document.getElementById('fabA').style.display = 'flex'; document.getElementById('fabH').style.display = 'none';
-  document.getElementById('fabGps').classList.remove('on');
-  plc = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
-}
-function clr() {
-  ['fN', 'fLu', 'fRe', 'fT', 'fF', 'fLT', 'fTel', 'fPR', 'fL', 'fNo', 'fLa', 'fLo'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('cH').textContent = 'Clicca sulla mappa o usa GPS';
-  fst = 'wishlist'; fnk = ''; curLog = []; renLog(); clrNewLog();
-  document.getElementById('newLog').classList.remove('open');
-  curPdfs = []; renPdfs(); curKps = []; renKps(); clearKpMks();
-  document.getElementById('gpsStatus').textContent = '';
-  ust(); unk();
-}
-function pnk(v) { fnk = v; unk(); }
-function unk() { document.getElementById('bNK_y').className = 'sb' + (fnk === 'si' ? ' sv' : ''); document.getElementById('bNK_n').className = 'sb' + (fnk === 'no' ? ' sw' : ''); document.getElementById('bNK_u').className = 'sb' + (fnk === '' ? '' : ''); }
-
-// ========== LOG ENTRIES ====
-function toggleNewLog() { const el = document.getElementById('newLog'); el.classList.toggle('open'); if (!el.classList.contains('open')) clrNewLog(); }
-function clrNewLog() { ['nlDate', 'nlCatture', 'nlEsca', 'nlNote'].forEach(id => document.getElementById(id).value = ''); }
-function addLogEntry() {
-  const d = document.getElementById('nlDate').value.trim(), ca = document.getElementById('nlCatture').value.trim(), es = document.getElementById('nlEsca').value.trim(), no = document.getElementById('nlNote').value.trim();
-  if (!d && !ca && !es && !no) { alert('Compila almeno un campo.'); return; }
-  curLog.push({ date: d || 'N/D', catture: ca, esca: es, note: no, id: Date.now().toString(36) });
-  renLog(); clrNewLog(); document.getElementById('newLog').classList.remove('open');
-}
-function delLogEntry(lid) { curLog = curLog.filter(e => e.id !== lid); renLog(); }
-function renLog() {
-  const el = document.getElementById('logList');
-  if (!curLog.length) { el.innerHTML = ''; return; }
-  el.innerHTML = curLog.map(e => '<div class="log-entry"><div class="le-head"><span class="le-date">📅 ' + esc(e.date) + '</span><button class="le-del" onclick="delLogEntry(\'' + e.id + '\')">✕</button></div><div class="le-row">' + (e.catture ? '🏆 ' + esc(e.catture) + '<br>' : '') + (e.esca ? '🪱 ' + esc(e.esca) + '<br>' : '') + (e.note ? '📝 ' + esc(e.note) : '') + '</div></div>').join('');
-}
-
-// ========== PDF ATTACHMENTS ====
-function handlePdfUpload(ev) {
-  const f = ev.target.files[0]; if (!f) return;
-  if (f.size > 5 * 1024 * 1024) { alert('Max 5MB per PDF.'); ev.target.value = ''; return; }
-
-  // PDF salvato come base64 in Firestore (no Storage necessario)
-  const r = new FileReader();
-  r.onload = function(e) {
-    curPdfs.push({ name: f.name, data: e.target.result, id: Date.now().toString(36) });
-    renPdfs();
-  };
-  r.readAsDataURL(f);
-  ev.target.value = '';
-}
-
-function delPdf(pid) {
-  const pdf = curPdfs.find(p => p.id === pid);
-  if (!pdf) return;
-
-  curPdfs = curPdfs.filter(p => p.id !== pid);
-  renPdfs();
-}
-
-function viewPdf(pid) {
-  const p = curPdfs.find(x => x.id === pid);
-  if (!p) return;
-  // Check for Firebase URL or legacy base64 data
-  const pdfUrl = p.url || p.data;
-  if (pdfUrl) window.open(pdfUrl, '_blank');
-}
-
-function renPdfs() {
-  const el = document.getElementById('pdfList');
-  if (!curPdfs.length) { el.innerHTML = ''; return; }
-  el.innerHTML = curPdfs.map(p => '<div class="pdf-item"><span>📄</span><span class="pdf-name">' + esc(p.name) + '</span><button class="pdf-view" onclick="viewPdf(\'' + p.id + '\')">Apri</button><button class="pdf-del" onclick="delPdf(\'' + p.id + '\')">✕</button></div>').join('');
-}
-
-// ========== KEYPOINTS (GPS + MAP) ====
-function addKpFromGPS() {
-  if (!navigator.geolocation) { setGpsStatus('GPS non disponibile su questo dispositivo', 'error'); return; }
-  const btn = document.getElementById('kpGpsBtn');
-  const fab = document.getElementById('fabGps');
-  btn.classList.add('active'); fab.classList.add('locating');
-  btn.textContent = '📡 Localizzando...';
-  setGpsStatus('Acquisizione posizione GPS...');
-  navigator.geolocation.getCurrentPosition(
-    function(pos) {
-      const lat = pos.coords.latitude, lng = pos.coords.longitude, acc = Math.round(pos.coords.accuracy);
-      const name = prompt('Nome keypoint (es. "Buca profonda", "Accesso fiume"):');
-      if (name && name.trim()) {
-        curKps.push({ name: name.trim(), lat, lng, id: Date.now().toString(36) });
-        renKps();
-        setGpsStatus('✅ Salvato! Precisione: ~' + acc + 'm');
-        map.flyTo([lat, lng], 16, { duration: .5 });
-      } else { setGpsStatus(''); }
-      btn.classList.remove('active'); fab.classList.remove('locating');
-      btn.textContent = '📡 Segna posizione GPS';
-    },
-    function(err) {
-      let msg = 'Errore GPS';
-      if (err.code === 1) msg = 'Permesso GPS negato. Abilita la localizzazione nelle impostazioni.';
-      if (err.code === 2) msg = 'Posizione non disponibile. Sei al coperto?';
-      if (err.code === 3) msg = 'Timeout GPS. Riprova all\'aperto.';
-      setGpsStatus(msg, 'error');
-      btn.classList.remove('active'); fab.classList.remove('locating');
-      btn.textContent = '📡 Segna posizione GPS';
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
-}
-function addKpFromMap() {
-  kpMapMode = true;
-  document.getElementById('fabH').style.display = 'flex';
-  document.getElementById('fabH').textContent = '📍 Tocca la mappa per il keypoint';
-  document.getElementById('fabGps').classList.remove('on');
-  setGpsStatus('Tocca un punto sulla mappa...');
-}
-function setGpsStatus(msg, type) { const el = document.getElementById('gpsStatus'); el.textContent = msg; el.className = 'gps-status' + (type === 'error' ? ' error' : ''); }
-function delKp(kid) { curKps = curKps.filter(k => k.id !== kid); renKps(); }
-function clearKpMks() { kpMks.forEach(m => map.removeLayer(m)); kpMks = []; }
-function renKps() {
-  const el = document.getElementById('kpList');
-  if (!curKps.length) { el.innerHTML = ''; return; }
-  el.innerHTML = curKps.map(k => '<div class="kp-entry"><span style="font-size:.9rem">🔹</span><div class="kp-info"><div class="kp-name">' + esc(k.name) + '</div><div class="kp-coords">' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</div></div><button class="kp-del" onclick="delKp(\'' + k.id + '\')">✕</button></div>').join('');
-}
-
-function pst(s) { fst = s; ust(); }
-function ust() { document.getElementById('bV').className = 'sb' + (fst === 'visited' ? ' sv' : ''); document.getElementById('bW').className = 'sb' + (fst === 'wishlist' ? ' sw' : ''); }
-
-function svSpot() {
-  const name = document.getElementById('fN').value.trim(), lat = parseFloat(document.getElementById('fLa').value), lng = parseFloat(document.getElementById('fLo').value);
-  if (!name) { alert('Dai un nome allo spot!'); return; }
-  if (isNaN(lat) || isNaN(lng)) { alert('Posiziona il pin sulla mappa o inserisci le coordinate.'); return; }
-  const d = { name, status: fst, lat, lng, luogo: document.getElementById('fLu').value.trim(), regione: document.getElementById('fRe').value.trim(), type: document.getElementById('fT').value.trim(), nokill: fnk, fish: document.getElementById('fF').value.trim(), luogoTess: document.getElementById('fLT').value.trim(), tel: document.getElementById('fTel').value.trim(), persona: document.getElementById('fPR').value.trim(), log: curLog.slice(), pdfs: curPdfs.slice(), keypoints: curKps.slice(), link: document.getElementById('fL').value.trim(), notes: document.getElementById('fNo').value.trim() };
-
-  if (eid) {
-    const i = spots.findIndex(s => s.id === eid);
-    if (i > -1) {
-      spots[i] = { ...spots[i], ...d };
-      amk(spots[i]);
-      if (useFirebase && uid && db) {
-        db.collection('users/' + uid + '/spots').doc(eid).set(spots[i]).catch(err => console.error("Firestore update error:", err));
+    // ========== STORAGE FUNCTIONS ==========
+    function ldLocal() {
+      try {
+        const s = localStorage.getItem('fishing-spots');
+        if (s) spots = JSON.parse(s);
+      } catch (e) {
+        console.error("LocalStorage load error:", e);
       }
     }
-  } else {
-    const ns = { id: gid(), ...d };
-    spots.push(ns);
-    amk(ns);
-    map.flyTo([lat, lng], 12, { duration: .5 });
-    if (useFirebase && uid && db) {
-      db.collection('users/' + uid + '/spots').doc(ns.id).set(ns).catch(err => console.error("Firestore create error:", err));
+
+    function ld() {
+      if (useFirebase && uid) {
+        // Firebase listener will handle loading
+      } else {
+        ldLocal();
+      }
     }
-  }
 
-  sav(); ren(); cf();
-}
+    function sav() {
+      // Always save to localStorage as backup
+      try {
+        localStorage.setItem('fishing-spots', JSON.stringify(spots));
+      } catch (e) {
+        console.error("LocalStorage save error:", e);
+      }
+    }
 
-function ds() {
-  if (!eid || !confirm('Eliminare questo spot?')) return;
-  rmk(eid);
-  spots = spots.filter(s => s.id !== eid);
+    function gid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
 
-  if (useFirebase && uid && db) {
-    db.collection('users/' + uid + '/spots').doc(eid).delete().catch(err => console.error("Firestore delete error:", err));
-  }
+    // ========== MAP ====
+    const map = L.map('map', { zoomControl: true }).setView([43.5, 12], 6);
+    const lys = {
+      satellite: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }),
+      road: L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' }),
+      terrain: L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', { maxZoom: 20, attribution: '© Google' })
+    };
+    const labLy = L.tileLayer('https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}', { maxZoom: 20 });
+    let aLy = lys.satellite; aLy.addTo(map); labLy.addTo(map);
 
-  sav(); ren(); cf();
-}
+    function setLy(n, b) {
+      map.removeLayer(aLy); map.removeLayer(labLy);
+      aLy = lys[n]; aLy.addTo(map);
+      if (n !== 'road') labLy.addTo(map);
+      document.querySelectorAll('.lb').forEach(x => x.classList.remove('a'));
+      b.classList.add('a');
+    }
 
-// ========== EXPORT / IMPORT ====
-function expJSON() { const b = new Blob([JSON.stringify(spots, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fishing-spots.json'; a.click(); }
+    // ========== SEARCH (Nominatim) ====
+    let searchTimer = null;
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
 
-function handleImp(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = function(ev) {
-    try {
-      const im = JSON.parse(ev.target.result);
-      if (Array.isArray(im)) {
-        let c = 0;
-        im.forEach(s => {
-          if (!spots.find(x => x.id === s.id)) {
-            spots.push(s);
-            c++;
-            // If Firebase, batch-write all new spots
-            if (useFirebase && uid && db) {
-              db.collection('users/' + uid + '/spots').doc(s.id).set(s).catch(err => console.error("Firestore import error:", err));
-            }
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      const q = this.value.trim();
+      if (q.length < 2) { searchResults.classList.remove('open'); return; }
+      searchTimer = setTimeout(() => doSearch(), 400);
+    });
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); doSearch(); }
+      if (e.key === 'Escape') { searchResults.classList.remove('open'); this.blur(); }
+    });
+    document.addEventListener('click', function (e) {
+      if (!document.getElementById('searchBox').contains(e.target)) searchResults.classList.remove('open');
+    });
+
+    async function doSearch() {
+      const q = searchInput.value.trim(); if (q.length < 2) return;
+      searchResults.innerHTML = '<div class="sr-loading">Cerco...</div>';
+      searchResults.classList.add('open');
+      try {
+        const resp = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=8&q=' + encodeURIComponent(q), { headers: { 'Accept-Language': 'it' } });
+        const data = await resp.json();
+        if (!data.length) { searchResults.innerHTML = '<div class="sr-empty">Nessun risultato</div>'; return; }
+        searchResults.innerHTML = data.map((r, i) => {
+          const icon = getPlaceIcon(r.type, r.class), name = r.display_name.split(',')[0], addr = r.display_name.split(',').slice(1, 3).join(',').trim();
+          return '<div class="sr-item" onclick="pickResult(' + i + ')"><div class="sr-icon">' + icon + '</div><div class="sr-text"><div class="sr-name">' + esc(name) + '</div><div class="sr-addr">' + esc(addr) + '</div></div></div>';
+        }).join('');
+        window._searchData = data;
+      } catch (err) { searchResults.innerHTML = '<div class="sr-empty">Errore di rete</div>'; }
+    }
+
+    function getPlaceIcon(type, cls) {
+      if (cls === 'waterway' || type === 'water' || type === 'bay' || type === 'strait') return '🌊';
+      if (cls === 'natural' && (type === 'beach' || type === 'coastline')) return '🏖️';
+      if (cls === 'natural') return '🏔️';
+      if (type === 'island' || type === 'islet') return '🏝️';
+      if (type === 'village' || type === 'town' || type === 'city' || type === 'hamlet') return '🏘️';
+      if (cls === 'harbour' || type === 'marina' || type === 'port') return '⚓';
+      return '📍';
+    }
+
+    function pickResult(i) {
+      const r = window._searchData[i]; if (!r) return;
+      const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+      if (searchMk) map.removeLayer(searchMk);
+      const zoom = r.boundingbox ? getBoundsZoom(r.boundingbox) : 13;
+      map.flyTo([lat, lng], zoom, { duration: .7 });
+      searchMk = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#1a3a4a;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3);animation:pu 1s ease-in-out infinite"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(map);
+      if (plc && !kpMapMode) {
+        document.getElementById('fLa').value = lat.toFixed(6);
+        document.getElementById('fLo').value = lng.toFixed(6);
+        document.getElementById('cH').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+        if (!document.getElementById('fN').value.trim()) document.getElementById('fN').value = r.display_name.split(',')[0];
+      }
+      searchResults.classList.remove('open');
+      searchInput.value = r.display_name.split(',')[0];
+      setTimeout(() => { if (searchMk) { map.removeLayer(searchMk); searchMk = null; } }, 8000);
+    }
+
+    function getBoundsZoom(bb) {
+      const d = Math.max(Math.abs(parseFloat(bb[1]) - parseFloat(bb[0])), Math.abs(parseFloat(bb[3]) - parseFloat(bb[2])));
+      if (d > 10) return 5; if (d > 5) return 7; if (d > 1) return 9; if (d > .3) return 11; if (d > .05) return 13; if (d > .01) return 15; return 16;
+    }
+
+    // ========== MARKERS ====
+    function mkI(s) { return L.divIcon({ className: '', html: '<div class="cm ' + s + '"><span>' + (s === 'visited' ? '🐟' : '📌') + '</span></div>', iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30] }); }
+
+    function amk(sp) {
+      if (mks[sp.id]) { if (mks[sp.id]._kpMks) mks[sp.id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[sp.id]); }
+      const m = L.marker([sp.lat, sp.lng], { icon: mkI(sp.status) }).addTo(map);
+      let h = '<div class="pt">' + esc(sp.name) + '</div><span class="pb ' + sp.status + '">' + (sp.status === 'visited' ? '✅ Visitato' : '📌 Wishlist') + '</span>';
+      if (sp.luogo) h += '<br><small>📍 ' + esc(sp.luogo) + '</small>';
+      if (sp.regione) h += '<br><small>🗺️ ' + esc(sp.regione) + '</small>';
+      if (sp.type) h += '<br><small>🎣 ' + esc(sp.type) + '</small>';
+      if (sp.nokill === 'si') h += '<br><small>🟢 No Kill</small>';
+      if (sp.nokill === 'no') h += '<br><small>🔴 Kill consentito</small>';
+      if (sp.fish) h += '<br><small>🐟 ' + esc(sp.fish) + '</small>';
+      if (sp.luogoTess) h += '<br><small>🎫 Tesserino: ' + esc(sp.luogoTess) + '</small>';
+      if (sp.persona) h += '<br><small>👤 ' + esc(sp.persona) + '</small>';
+      if (sp.tel) h += '<br><small>📞 <a href="tel:' + esc(sp.tel) + '">' + esc(sp.tel) + '</a></small>';
+      const lg = Array.isArray(sp.log) ? sp.log : [];
+      if (lg.length) { h += '<div style="margin-top:6px;border-top:1px solid #ddd;padding-top:4px"><small style="font-weight:600;color:#1a3a4a">📋 ' + lg.length + ' uscit' + (lg.length === 1 ? 'a' : 'e') + '</small>'; lg.slice(-2).forEach(e => { h += '<div style="margin:3px 0;font-size:.75rem"><b>' + esc(e.date) + '</b>' + (e.catture ? ' — ' + esc(e.catture) : '') + '</div>'; }); h += '</div>'; }
+      const pfs = Array.isArray(sp.pdfs) ? sp.pdfs : [];
+      if (pfs.length) h += '<br><small>📎 ' + pfs.length + ' PDF allegat' + (pfs.length > 1 ? 'i' : 'o') + '</small>';
+      const kps2 = Array.isArray(sp.keypoints) ? sp.keypoints : [];
+      if (kps2.length) h += '<br><small>📍 ' + kps2.length + ' keypoint' + (kps2.length > 1 ? 's' : '') + '</small>';
+      if (sp.notes) h += '<p style="margin-top:5px;color:#4a5a5a;font-size:.78rem">' + esc(sp.notes) + '</p>';
+      if (sp.link) h += '<a class="pl" href="' + esc(sp.link) + '" target="_blank">🔗 Link</a><br>';
+      h += '<div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap"><a class="pl" href="#" onclick="event.preventDefault();oe(\'' + sp.id + '\')">✏️ Modifica</a><a class="pl" href="#" onclick="event.preventDefault();expPDF(\'' + sp.id + '\')">📄 Stampa</a></div>';
+      m.bindPopup(h, { maxWidth: 280 }); mks[sp.id] = m;
+      // Keypoint markers
+      if (kps2.length) { m._kpMks = []; kps2.forEach(k => { const km = L.circleMarker([k.lat, k.lng], { radius: 5, color: '#e07a5f', fillColor: '#fff', fillOpacity: .9, weight: 2 }).addTo(map); km.bindTooltip(k.name, { permanent: false, direction: 'top', offset: [0, -6] }); km.bindPopup('<b>🔹 ' + esc(k.name) + '</b><br><small>' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</small><br><small style="color:#888">' + esc(sp.name) + '</small>'); m._kpMks.push(km); }); }
+    }
+    function rmk(id) { if (mks[id]) { if (mks[id]._kpMks) mks[id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[id]); delete mks[id]; } }
+
+    map.on('click', function (e) {
+      if (!plc) return;
+      if (kpMapMode) {
+        const name = prompt('Nome keypoint:');
+        if (!name) return;
+        curKps.push({ name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, id: Date.now().toString(36) });
+        renKps(); kpMapMode = false;
+        document.getElementById('fabH').style.display = 'none';
+        if (document.getElementById('fw').classList.contains('on')) document.getElementById('fabGps').classList.add('on');
+        return;
+      }
+      document.getElementById('fLa').value = e.latlng.lat.toFixed(6);
+      document.getElementById('fLo').value = e.latlng.lng.toFixed(6);
+      document.getElementById('cH').textContent = e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
+      if (tmk) map.removeLayer(tmk);
+      tmk = L.circleMarker(e.latlng, { radius: 7, color: '#e07a5f', fillColor: '#e07a5f', fillOpacity: .5 }).addTo(map);
+    });
+
+    // ========== SIDEBAR LIST ====
+    function ren() {
+      const fl = flt === 'all' ? spots : spots.filter(s => s.status === flt);
+      document.getElementById('cV').textContent = spots.filter(s => s.status === 'visited').length;
+      document.getElementById('cW').textContent = spots.filter(s => s.status === 'wishlist').length;
+      const el = document.getElementById('sl');
+      if (!fl.length) { el.innerHTML = '<div class="em"><div class="ic">🌊</div><p>' + (flt === 'all' ? 'Nessuno spot ancora.<br>Tocca "Aggiungi spot" per iniziare!' : 'Nessuno spot qui.') + '</p></div>'; return; }
+      el.innerHTML = fl.map(s => {
+        const lc = Array.isArray(s.log) ? s.log.length : 0, pc = Array.isArray(s.pdfs) ? s.pdfs.length : 0, kc = Array.isArray(s.keypoints) ? s.keypoints.length : 0;
+        const lastLog = lc ? s.log[s.log.length - 1] : null;
+        return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '</div>';
+      }).join('');
+    }
+    function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
+    function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
+
+    // ========== FORM ====
+    function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; document.getElementById('fabGps').classList.add('on'); opf(); }
+    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; ust(); }
+    function oe(id) {
+      const s = spots.find(x => x.id === id); if (!s) return;
+      eid = id; fst = s.status; fnk = s.nokill || ''; plc = true;
+      document.getElementById('fN').value = s.name;
+      document.getElementById('fLu').value = s.luogo || '';
+      document.getElementById('fRe').value = s.regione || '';
+      document.getElementById('fT').value = s.type || '';
+      document.getElementById('fF').value = s.fish || '';
+      document.getElementById('fLT').value = s.luogoTess || '';
+      document.getElementById('fTel').value = s.tel || '';
+      document.getElementById('fPR').value = s.persona || '';
+      if (Array.isArray(s.log)) { curLog = s.log.slice(); }
+      else { curLog = []; if (s.memoria || s.catture || s.esca || s.date) { curLog.push({ date: s.date || 'N/D', catture: s.catture || '', esca: s.esca || '', note: s.memoria || '', id: Date.now().toString(36) }); } }
+      renLog();
+      curPdfs = Array.isArray(s.pdfs) ? s.pdfs.slice() : []; renPdfs();
+      curKps = Array.isArray(s.keypoints) ? s.keypoints.slice() : []; renKps();
+      document.getElementById('fL').value = s.link || '';
+      document.getElementById('fNo').value = s.notes || '';
+      document.getElementById('fLa').value = s.lat;
+      document.getElementById('fLo').value = s.lng;
+      document.getElementById('fabA').style.display = 'none';
+      document.getElementById('fabH').style.display = 'none';
+      document.getElementById('fabGps').classList.add('on');
+      opf(); ust(); unk(); map.closePopup();
+    }
+    function cf() {
+      document.getElementById('fw').classList.remove('on'); document.getElementById('lw').classList.remove('off');
+      document.getElementById('fabA').style.display = 'flex'; document.getElementById('fabH').style.display = 'none';
+      document.getElementById('fabGps').classList.remove('on');
+      plc = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
+    }
+    function clr() {
+      ['fN', 'fLu', 'fRe', 'fT', 'fF', 'fLT', 'fTel', 'fPR', 'fL', 'fNo', 'fLa', 'fLo'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cH').textContent = 'Clicca sulla mappa o usa GPS';
+      fst = 'wishlist'; fnk = ''; curLog = []; renLog(); clrNewLog();
+      document.getElementById('newLog').classList.remove('open');
+      curPdfs = []; renPdfs(); curKps = []; renKps(); clearKpMks();
+      document.getElementById('gpsStatus').textContent = '';
+      ust(); unk();
+    }
+    function pnk(v) { fnk = v; unk(); }
+    function unk() { document.getElementById('bNK_y').className = 'sb' + (fnk === 'si' ? ' sv' : ''); document.getElementById('bNK_n').className = 'sb' + (fnk === 'no' ? ' sw' : ''); document.getElementById('bNK_u').className = 'sb' + (fnk === '' ? '' : ''); }
+
+    // ========== LOG ENTRIES ====
+    function toggleNewLog() { const el = document.getElementById('newLog'); el.classList.toggle('open'); if (!el.classList.contains('open')) clrNewLog(); }
+    function clrNewLog() { ['nlDate', 'nlCatture', 'nlEsca', 'nlNote'].forEach(id => document.getElementById(id).value = ''); }
+    function addLogEntry() {
+      const d = document.getElementById('nlDate').value.trim(), ca = document.getElementById('nlCatture').value.trim(), es = document.getElementById('nlEsca').value.trim(), no = document.getElementById('nlNote').value.trim();
+      if (!d && !ca && !es && !no) { alert('Compila almeno un campo.'); return; }
+      curLog.push({ date: d || 'N/D', catture: ca, esca: es, note: no, id: Date.now().toString(36) });
+      renLog(); clrNewLog(); document.getElementById('newLog').classList.remove('open');
+    }
+    function delLogEntry(lid) { curLog = curLog.filter(e => e.id !== lid); renLog(); }
+    function renLog() {
+      const el = document.getElementById('logList');
+      if (!curLog.length) { el.innerHTML = ''; return; }
+      el.innerHTML = curLog.map(e => '<div class="log-entry"><div class="le-head"><span class="le-date">📅 ' + esc(e.date) + '</span><button class="le-del" onclick="delLogEntry(\'' + e.id + '\')">✕</button></div><div class="le-row">' + (e.catture ? '🏆 ' + esc(e.catture) + '<br>' : '') + (e.esca ? '🪱 ' + esc(e.esca) + '<br>' : '') + (e.note ? '📝 ' + esc(e.note) : '') + '</div></div>').join('');
+    }
+
+    // ========== PDF ATTACHMENTS ====
+    function handlePdfUpload(ev) {
+      const f = ev.target.files[0]; if (!f) return;
+      if (f.size > 5 * 1024 * 1024) { alert('Max 5MB per PDF.'); ev.target.value = ''; return; }
+
+      // PDF salvato come base64 in Firestore (no Storage necessario)
+      const r = new FileReader();
+      r.onload = function (e) {
+        curPdfs.push({ name: f.name, data: e.target.result, id: Date.now().toString(36) });
+        renPdfs();
+      };
+      r.readAsDataURL(f);
+      ev.target.value = '';
+    }
+
+    function delPdf(pid) {
+      const pdf = curPdfs.find(p => p.id === pid);
+      if (!pdf) return;
+
+      curPdfs = curPdfs.filter(p => p.id !== pid);
+      renPdfs();
+    }
+
+    function viewPdf(pid) {
+      const p = curPdfs.find(x => x.id === pid);
+      if (!p) return;
+      // Check for Firebase URL or legacy base64 data
+      const pdfUrl = p.url || p.data;
+      if (pdfUrl) window.open(pdfUrl, '_blank');
+    }
+
+    function renPdfs() {
+      const el = document.getElementById('pdfList');
+      if (!curPdfs.length) { el.innerHTML = ''; return; }
+      el.innerHTML = curPdfs.map(p => '<div class="pdf-item"><span>📄</span><span class="pdf-name">' + esc(p.name) + '</span><button class="pdf-view" onclick="viewPdf(\'' + p.id + '\')">Apri</button><button class="pdf-del" onclick="delPdf(\'' + p.id + '\')">✕</button></div>').join('');
+    }
+
+    // ========== KEYPOINTS (GPS + MAP) ====
+    function addKpFromGPS() {
+      if (!navigator.geolocation) { setGpsStatus('GPS non disponibile su questo dispositivo', 'error'); return; }
+      const btn = document.getElementById('kpGpsBtn');
+      const fab = document.getElementById('fabGps');
+      btn.classList.add('active'); fab.classList.add('locating');
+      btn.textContent = '📡 Localizzando...';
+      setGpsStatus('Acquisizione posizione GPS...');
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          const lat = pos.coords.latitude, lng = pos.coords.longitude, acc = Math.round(pos.coords.accuracy);
+          const name = prompt('Nome keypoint (es. "Buca profonda", "Accesso fiume"):');
+          if (name && name.trim()) {
+            curKps.push({ name: name.trim(), lat, lng, id: Date.now().toString(36) });
+            renKps();
+            setGpsStatus('✅ Salvato! Precisione: ~' + acc + 'm');
+            map.flyTo([lat, lng], 16, { duration: .5 });
+          } else { setGpsStatus(''); }
+          btn.classList.remove('active'); fab.classList.remove('locating');
+          btn.textContent = '📡 Segna posizione GPS';
+        },
+        function (err) {
+          let msg = 'Errore GPS';
+          if (err.code === 1) msg = 'Permesso GPS negato. Abilita la localizzazione nelle impostazioni.';
+          if (err.code === 2) msg = 'Posizione non disponibile. Sei al coperto?';
+          if (err.code === 3) msg = 'Timeout GPS. Riprova all\'aperto.';
+          setGpsStatus(msg, 'error');
+          btn.classList.remove('active'); fab.classList.remove('locating');
+          btn.textContent = '📡 Segna posizione GPS';
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+    function addKpFromMap() {
+      kpMapMode = true;
+      document.getElementById('fabH').style.display = 'flex';
+      document.getElementById('fabH').textContent = '📍 Tocca la mappa per il keypoint';
+      document.getElementById('fabGps').classList.remove('on');
+      setGpsStatus('Tocca un punto sulla mappa...');
+    }
+    function setGpsStatus(msg, type) { const el = document.getElementById('gpsStatus'); el.textContent = msg; el.className = 'gps-status' + (type === 'error' ? ' error' : ''); }
+    function delKp(kid) { curKps = curKps.filter(k => k.id !== kid); renKps(); }
+    function clearKpMks() { kpMks.forEach(m => map.removeLayer(m)); kpMks = []; }
+    function renKps() {
+      const el = document.getElementById('kpList');
+      if (!curKps.length) { el.innerHTML = ''; return; }
+      el.innerHTML = curKps.map(k => '<div class="kp-entry"><span style="font-size:.9rem">🔹</span><div class="kp-info"><div class="kp-name">' + esc(k.name) + '</div><div class="kp-coords">' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</div></div><button class="kp-del" onclick="delKp(\'' + k.id + '\')">✕</button></div>').join('');
+    }
+
+    function pst(s) { fst = s; ust(); }
+    function ust() { document.getElementById('bV').className = 'sb' + (fst === 'visited' ? ' sv' : ''); document.getElementById('bW').className = 'sb' + (fst === 'wishlist' ? ' sw' : ''); }
+
+    function svSpot() {
+      const name = document.getElementById('fN').value.trim(), lat = parseFloat(document.getElementById('fLa').value), lng = parseFloat(document.getElementById('fLo').value);
+      if (!name) { alert('Dai un nome allo spot!'); return; }
+      if (isNaN(lat) || isNaN(lng)) { alert('Posiziona il pin sulla mappa o inserisci le coordinate.'); return; }
+      const d = { name, status: fst, lat, lng, luogo: document.getElementById('fLu').value.trim(), regione: document.getElementById('fRe').value.trim(), type: document.getElementById('fT').value.trim(), nokill: fnk, fish: document.getElementById('fF').value.trim(), luogoTess: document.getElementById('fLT').value.trim(), tel: document.getElementById('fTel').value.trim(), persona: document.getElementById('fPR').value.trim(), log: curLog.slice(), pdfs: curPdfs.slice(), keypoints: curKps.slice(), link: document.getElementById('fL').value.trim(), notes: document.getElementById('fNo').value.trim() };
+
+      if (eid) {
+        const i = spots.findIndex(s => s.id === eid);
+        if (i > -1) {
+          spots[i] = { ...spots[i], ...d };
+          amk(spots[i]);
+          if (useFirebase && uid && db) {
+            db.collection('users/' + uid + '/spots').doc(eid).set(spots[i]).catch(err => console.error("Firestore update error:", err));
           }
-        });
-        sav(); ra(); ren(); fa();
-        alert('Importati ' + c + ' nuovi spot! (Nota: PDF con Firebase contiene solo URL, non dati base64)');
+        }
+      } else {
+        const ns = { id: gid(), ...d };
+        spots.push(ns);
+        amk(ns);
+        map.flyTo([lat, lng], 12, { duration: .5 });
+        if (useFirebase && uid && db) {
+          db.collection('users/' + uid + '/spots').doc(ns.id).set(ns).catch(err => console.error("Firestore create error:", err));
+        }
       }
-    } catch (err) { alert('File non valido.'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
-}
 
-function expKML() {
-  let k = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>Compendio di Pesca</name>\n';
-  k += '<Style id="v"><IconStyle><scale>1.1</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href></Icon></IconStyle></Style>\n';
-  k += '<Style id="w"><IconStyle><scale>1.1</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/red-circle.png</href></Icon></IconStyle></Style>\n';
-  k += '<Style id="kp"><IconStyle><scale>0.8</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/orange-circle.png</href></Icon></IconStyle></Style>\n';
-  spots.forEach(s => {
-    k += '<Placemark>\n<name>' + esc(s.name) + '</name>\n<styleUrl>#' + (s.status === 'visited' ? 'v' : 'w') + '</styleUrl>\n';
-    let d = ''; if (s.luogo) d += 'Luogo: ' + s.luogo + '\n'; if (s.regione) d += 'Regione: ' + s.regione + '\n'; if (s.type) d += 'Pesca: ' + s.type + '\n'; if (s.nokill) d += 'No Kill: ' + s.nokill + '\n'; if (s.fish) d += 'Pesci: ' + s.fish + '\n'; if (s.luogoTess) d += 'Tesserino: ' + s.luogoTess + '\n'; if (s.tel) d += 'Tel: ' + s.tel + '\n'; if (s.persona) d += 'Riferimento: ' + s.persona + '\n';
-    const lg2 = Array.isArray(s.log) ? s.log : []; if (lg2.length) { d += '\n--- Diario ---\n'; lg2.forEach(e => { d += e.date + (e.catture ? ' | ' + e.catture : '') + (e.esca ? ' | ' + e.esca : '') + (e.note ? ' | ' + e.note : '') + '\n'; }); }
-    if (s.notes) d += '\n' + s.notes + '\n'; if (s.link) d += '\nLink: ' + s.link;
-    if (d) k += '<description><![CDATA[' + d + ']]></description>\n';
-    k += '<Point><coordinates>' + s.lng + ',' + s.lat + ',0</coordinates></Point>\n</Placemark>\n';
-    const kps4 = Array.isArray(s.keypoints) ? s.keypoints : []; kps4.forEach(kp => { k += '<Placemark>\n<name>🔹 ' + esc(kp.name) + '</name>\n<styleUrl>#kp</styleUrl>\n<description>Keypoint: ' + esc(s.name) + '</description>\n<Point><coordinates>' + kp.lng + ',' + kp.lat + ',0</coordinates></Point>\n</Placemark>\n'; });
-  });
-  k += '</Document>\n</kml>';
-  const b = new Blob([k], { type: 'application/vnd.google-earth.kml+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fishing-spots.kml'; a.click();
-}
-
-// ========== PDF PRINT PER SPOT ====
-function expPDF(id) {
-  const s = spots.find(x => x.id === id); if (!s) return;
-  const lg = Array.isArray(s.log) ? s.log : [], nk = s.nokill === 'si' ? 'Si' : s.nokill === 'no' ? 'No' : 'N/D', kps5 = Array.isArray(s.keypoints) ? s.keypoints : [];
-  let b = '<html><head><meta charset="UTF-8"><style>';
-  b += 'body{font-family:Helvetica,Arial,sans-serif;margin:40px;color:#1a2a2a;font-size:12px;line-height:1.6}';
-  b += 'h1{font-size:22px;color:#1a3a4a;border-bottom:2px solid #1a3a4a;padding-bottom:8px}';
-  b += '.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:12px}';
-  b += '.visited{background:#e8f5e9;color:#2e7d32}.wishlist{background:#fce4ec;color:#c62828}';
-  b += 'table{width:100%;border-collapse:collapse;margin:12px 0}td{padding:6px 10px;border-bottom:1px solid #ddd;vertical-align:top}td:first-child{font-weight:600;width:150px;color:#1a3a4a}';
-  b += 'h2{font-size:15px;color:#1a3a4a;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}';
-  b += '.lr{background:#f9f6ee;padding:8px 10px;margin-bottom:6px;border-radius:4px;border-left:3px solid #5a8a6a}';
-  b += '.lr.kp{border-left-color:#e07a5f}';
-  b += '.ld{font-weight:600;color:#1a3a4a}.ldt{color:#4a5a5a;margin-top:2px}';
-  b += '.footer{margin-top:30px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#888;text-align:center}';
-  b += '</style></head><body>';
-  b += '<h1>🎣 ' + esc(s.name) + '</h1>';
-  b += '<span class="badge ' + s.status + '">' + (s.status === 'visited' ? 'Visitato' : 'Wishlist') + '</span><table>';
-  if (s.luogo) b += '<tr><td>Luogo</td><td>' + esc(s.luogo) + '</td></tr>';
-  if (s.regione) b += '<tr><td>Regione</td><td>' + esc(s.regione) + '</td></tr>';
-  b += '<tr><td>Coordinate</td><td>' + s.lat.toFixed(5) + ', ' + s.lng.toFixed(5) + '</td></tr>';
-  if (s.type) b += '<tr><td>Tipo pesca</td><td>' + esc(s.type) + '</td></tr>';
-  b += '<tr><td>No Kill</td><td>' + nk + '</td></tr>';
-  if (s.fish) b += '<tr><td>Pesci</td><td>' + esc(s.fish) + '</td></tr>';
-  if (s.luogoTess) b += '<tr><td>Tesserino</td><td>' + esc(s.luogoTess) + '</td></tr>';
-  if (s.persona) b += '<tr><td>Riferimento</td><td>' + esc(s.persona) + '</td></tr>';
-  if (s.tel) b += '<tr><td>Tel</td><td>' + esc(s.tel) + '</td></tr>';
-  if (s.notes) b += '<tr><td>Note</td><td>' + esc(s.notes) + '</td></tr>';
-  b += '</table>';
-  if (lg.length) { b += '<h2>📋 Diario (' + lg.length + ' uscite)</h2>'; lg.forEach(e => { b += '<div class="lr"><div class="ld">' + esc(e.date) + '</div><div class="ldt">' + (e.catture ? 'Catture: ' + esc(e.catture) + '<br>' : '') + (e.esca ? 'Esca: ' + esc(e.esca) + '<br>' : '') + (e.note ? esc(e.note) : '') + '</div></div>'; }); }
-  if (kps5.length) { b += '<h2>📍 Keypoints (' + kps5.length + ')</h2>'; kps5.forEach(k => { b += '<div class="lr kp"><div class="ld">🔹 ' + esc(k.name) + '</div><div class="ldt">' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</div></div>'; }); }
-  b += '<div class="footer">Compendio di Pesca — ' + new Date().toLocaleDateString('it-IT') + '</div></body></html>';
-  const w = window.open('', '_blank'); w.document.write(b); w.document.close(); setTimeout(() => w.print(), 400);
-}
-
-function ra() { Object.keys(mks).forEach(id => { if (mks[id]._kpMks) mks[id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[id]); }); mks = {}; spots.forEach(s => amk(s)); }
-function fa() { if (!spots.length) return; const g = L.featureGroup(Object.values(mks)); map.fitBounds(g.getBounds().pad(.1)); }
-
-// ========== GOOGLE AUTH ====
-let firestoreUnsubscribe = null;
-
-function startFirestoreListener() {
-  if (firestoreUnsubscribe) firestoreUnsubscribe();
-  firestoreUnsubscribe = db.collection('users/' + uid + '/spots').onSnapshot(snap => {
-    spots = [];
-    snap.forEach(doc => spots.push(doc.data()));
-    try { localStorage.setItem('fishing-spots', JSON.stringify(spots)); } catch (e) { }
-    ra(); ren(); if (spots.length) fa();
-    document.getElementById('syncStatus').textContent = '☁️ Cloud';
-    document.getElementById('syncStatus').title = 'Sincronizzato con il cloud';
-  }, err => {
-    console.error('Firestore listener error:', err);
-    document.getElementById('syncStatus').textContent = '⚠️ Offline';
-    ldLocal(); ra(); ren(); if (spots.length) fa();
-  });
-}
-
-function showLoggedIn(user) {
-  uid = user.uid;
-  document.getElementById('loginBtn').style.display = 'none';
-  document.getElementById('userInfo').style.display = 'flex';
-  document.getElementById('userName').textContent = user.displayName || user.email || '';
-  if (user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
-  else document.getElementById('userPhoto').style.display = 'none';
-  startFirestoreListener();
-}
-
-function showLoggedOut() {
-  uid = null;
-  if (firestoreUnsubscribe) { firestoreUnsubscribe(); firestoreUnsubscribe = null; }
-  document.getElementById('loginBtn').style.display = 'flex';
-  document.getElementById('userInfo').style.display = 'none';
-  document.getElementById('syncStatus').textContent = '📱 Locale';
-  document.getElementById('syncStatus').title = 'Dati salvati solo su questo dispositivo';
-  ldLocal(); ra(); ren(); if (spots.length) fa();
-}
-
-function googleLogin() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => {
-    console.error('Google login error:', err);
-    if (err.code === 'auth/popup-blocked') {
-      // Fallback per mobile: usa redirect
-      auth.signInWithRedirect(provider);
-    } else {
-      alert('Errore login: ' + err.message);
+      sav(); ren(); cf();
     }
-  });
-}
 
-function doLogout() {
-  if (confirm('Vuoi uscire? I dati locali restano salvati sul dispositivo.')) {
-    auth.signOut();
-  }
-}
+    function ds() {
+      if (!eid || !confirm('Eliminare questo spot?')) return;
+      rmk(eid);
+      spots = spots.filter(s => s.id !== eid);
 
-// ========== INIT ====
-if (useFirebase) {
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      showLoggedIn(user);
-    } else {
-      showLoggedOut();
+      if (useFirebase && uid && db) {
+        db.collection('users/' + uid + '/spots').doc(eid).delete().catch(err => console.error("Firestore delete error:", err));
+      }
+
+      sav(); ren(); cf();
     }
-  });
-  // Show login button once Firebase is ready
-  document.getElementById('loginBtn').style.display = 'flex';
-  // Load local data while waiting for auth
-  ldLocal(); ra(); ren(); if (spots.length) fa();
-} else {
-  ldLocal(); ra(); ren(); if (spots.length) fa();
-}
-</script>
+
+    // ========== EXPORT / IMPORT ====
+    function expJSON() { const b = new Blob([JSON.stringify(spots, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fishing-spots.json'; a.click(); }
+
+    function handleImp(e) {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = function (ev) {
+        try {
+          const im = JSON.parse(ev.target.result);
+          if (Array.isArray(im)) {
+            let c = 0;
+            im.forEach(s => {
+              if (!spots.find(x => x.id === s.id)) {
+                spots.push(s);
+                c++;
+                // If Firebase, batch-write all new spots
+                if (useFirebase && uid && db) {
+                  db.collection('users/' + uid + '/spots').doc(s.id).set(s).catch(err => console.error("Firestore import error:", err));
+                }
+              }
+            });
+            sav(); ra(); ren(); fa();
+            alert('Importati ' + c + ' nuovi spot! (Nota: PDF con Firebase contiene solo URL, non dati base64)');
+          }
+        } catch (err) { alert('File non valido.'); }
+      };
+      r.readAsText(f);
+      e.target.value = '';
+    }
+
+    function expKML() {
+      let k = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>Compendio di Pesca</name>\n';
+      k += '<Style id="v"><IconStyle><scale>1.1</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href></Icon></IconStyle></Style>\n';
+      k += '<Style id="w"><IconStyle><scale>1.1</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/red-circle.png</href></Icon></IconStyle></Style>\n';
+      k += '<Style id="kp"><IconStyle><scale>0.8</scale><Icon><href>https://maps.google.com/mapfiles/kml/paddle/orange-circle.png</href></Icon></IconStyle></Style>\n';
+      spots.forEach(s => {
+        k += '<Placemark>\n<name>' + esc(s.name) + '</name>\n<styleUrl>#' + (s.status === 'visited' ? 'v' : 'w') + '</styleUrl>\n';
+        let d = ''; if (s.luogo) d += 'Luogo: ' + s.luogo + '\n'; if (s.regione) d += 'Regione: ' + s.regione + '\n'; if (s.type) d += 'Pesca: ' + s.type + '\n'; if (s.nokill) d += 'No Kill: ' + s.nokill + '\n'; if (s.fish) d += 'Pesci: ' + s.fish + '\n'; if (s.luogoTess) d += 'Tesserino: ' + s.luogoTess + '\n'; if (s.tel) d += 'Tel: ' + s.tel + '\n'; if (s.persona) d += 'Riferimento: ' + s.persona + '\n';
+        const lg2 = Array.isArray(s.log) ? s.log : []; if (lg2.length) { d += '\n--- Diario ---\n'; lg2.forEach(e => { d += e.date + (e.catture ? ' | ' + e.catture : '') + (e.esca ? ' | ' + e.esca : '') + (e.note ? ' | ' + e.note : '') + '\n'; }); }
+        if (s.notes) d += '\n' + s.notes + '\n'; if (s.link) d += '\nLink: ' + s.link;
+        if (d) k += '<description><![CDATA[' + d + ']]></description>\n';
+        k += '<Point><coordinates>' + s.lng + ',' + s.lat + ',0</coordinates></Point>\n</Placemark>\n';
+        const kps4 = Array.isArray(s.keypoints) ? s.keypoints : []; kps4.forEach(kp => { k += '<Placemark>\n<name>🔹 ' + esc(kp.name) + '</name>\n<styleUrl>#kp</styleUrl>\n<description>Keypoint: ' + esc(s.name) + '</description>\n<Point><coordinates>' + kp.lng + ',' + kp.lat + ',0</coordinates></Point>\n</Placemark>\n'; });
+      });
+      k += '</Document>\n</kml>';
+      const b = new Blob([k], { type: 'application/vnd.google-earth.kml+xml' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fishing-spots.kml'; a.click();
+    }
+
+    // ========== PDF PRINT PER SPOT ====
+    function expPDF(id) {
+      const s = spots.find(x => x.id === id); if (!s) return;
+      const lg = Array.isArray(s.log) ? s.log : [], nk = s.nokill === 'si' ? 'Si' : s.nokill === 'no' ? 'No' : 'N/D', kps5 = Array.isArray(s.keypoints) ? s.keypoints : [];
+      let b = '<html><head><meta charset="UTF-8"><style>';
+      b += 'body{font-family:Helvetica,Arial,sans-serif;margin:40px;color:#1a2a2a;font-size:12px;line-height:1.6}';
+      b += 'h1{font-size:22px;color:#1a3a4a;border-bottom:2px solid #1a3a4a;padding-bottom:8px}';
+      b += '.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:12px}';
+      b += '.visited{background:#e8f5e9;color:#2e7d32}.wishlist{background:#fce4ec;color:#c62828}';
+      b += 'table{width:100%;border-collapse:collapse;margin:12px 0}td{padding:6px 10px;border-bottom:1px solid #ddd;vertical-align:top}td:first-child{font-weight:600;width:150px;color:#1a3a4a}';
+      b += 'h2{font-size:15px;color:#1a3a4a;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}';
+      b += '.lr{background:#f9f6ee;padding:8px 10px;margin-bottom:6px;border-radius:4px;border-left:3px solid #5a8a6a}';
+      b += '.lr.kp{border-left-color:#e07a5f}';
+      b += '.ld{font-weight:600;color:#1a3a4a}.ldt{color:#4a5a5a;margin-top:2px}';
+      b += '.footer{margin-top:30px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#888;text-align:center}';
+      b += '</style></head><body>';
+      b += '<h1>🎣 ' + esc(s.name) + '</h1>';
+      b += '<span class="badge ' + s.status + '">' + (s.status === 'visited' ? 'Visitato' : 'Wishlist') + '</span><table>';
+      if (s.luogo) b += '<tr><td>Luogo</td><td>' + esc(s.luogo) + '</td></tr>';
+      if (s.regione) b += '<tr><td>Regione</td><td>' + esc(s.regione) + '</td></tr>';
+      b += '<tr><td>Coordinate</td><td>' + s.lat.toFixed(5) + ', ' + s.lng.toFixed(5) + '</td></tr>';
+      if (s.type) b += '<tr><td>Tipo pesca</td><td>' + esc(s.type) + '</td></tr>';
+      b += '<tr><td>No Kill</td><td>' + nk + '</td></tr>';
+      if (s.fish) b += '<tr><td>Pesci</td><td>' + esc(s.fish) + '</td></tr>';
+      if (s.luogoTess) b += '<tr><td>Tesserino</td><td>' + esc(s.luogoTess) + '</td></tr>';
+      if (s.persona) b += '<tr><td>Riferimento</td><td>' + esc(s.persona) + '</td></tr>';
+      if (s.tel) b += '<tr><td>Tel</td><td>' + esc(s.tel) + '</td></tr>';
+      if (s.notes) b += '<tr><td>Note</td><td>' + esc(s.notes) + '</td></tr>';
+      b += '</table>';
+      if (lg.length) { b += '<h2>📋 Diario (' + lg.length + ' uscite)</h2>'; lg.forEach(e => { b += '<div class="lr"><div class="ld">' + esc(e.date) + '</div><div class="ldt">' + (e.catture ? 'Catture: ' + esc(e.catture) + '<br>' : '') + (e.esca ? 'Esca: ' + esc(e.esca) + '<br>' : '') + (e.note ? esc(e.note) : '') + '</div></div>'; }); }
+      if (kps5.length) { b += '<h2>📍 Keypoints (' + kps5.length + ')</h2>'; kps5.forEach(k => { b += '<div class="lr kp"><div class="ld">🔹 ' + esc(k.name) + '</div><div class="ldt">' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</div></div>'; }); }
+      b += '<div class="footer">Compendio di Pesca — ' + new Date().toLocaleDateString('it-IT') + '</div></body></html>';
+      const w = window.open('', '_blank'); w.document.write(b); w.document.close(); setTimeout(() => w.print(), 400);
+    }
+
+    function ra() { Object.keys(mks).forEach(id => { if (mks[id]._kpMks) mks[id]._kpMks.forEach(m => map.removeLayer(m)); map.removeLayer(mks[id]); }); mks = {}; spots.forEach(s => amk(s)); }
+    function fa() { if (!spots.length) return; const g = L.featureGroup(Object.values(mks)); map.fitBounds(g.getBounds().pad(.1)); }
+
+    // ========== GOOGLE AUTH ====
+    let firestoreUnsubscribe = null;
+
+    function startFirestoreListener() {
+      if (firestoreUnsubscribe) firestoreUnsubscribe();
+      firestoreUnsubscribe = db.collection('users/' + uid + '/spots').onSnapshot(snap => {
+        spots = [];
+        snap.forEach(doc => spots.push(doc.data()));
+        try { localStorage.setItem('fishing-spots', JSON.stringify(spots)); } catch (e) { }
+        ra(); ren(); if (spots.length) fa();
+        document.getElementById('syncStatus').textContent = '☁️ Cloud';
+        document.getElementById('syncStatus').title = 'Sincronizzato con il cloud';
+      }, err => {
+        console.error('Firestore listener error:', err);
+        document.getElementById('syncStatus').textContent = '⚠️ Offline';
+        ldLocal(); ra(); ren(); if (spots.length) fa();
+      });
+    }
+
+    function showLoggedIn(user) {
+      uid = user.uid;
+      document.getElementById('loginBtn').style.display = 'none';
+      document.getElementById('userInfo').style.display = 'flex';
+      document.getElementById('userName').textContent = user.displayName || user.email || '';
+      if (user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
+      else document.getElementById('userPhoto').style.display = 'none';
+      startFirestoreListener();
+    }
+
+    function showLoggedOut() {
+      uid = null;
+      if (firestoreUnsubscribe) { firestoreUnsubscribe(); firestoreUnsubscribe = null; }
+      document.getElementById('loginBtn').style.display = 'flex';
+      document.getElementById('userInfo').style.display = 'none';
+      document.getElementById('syncStatus').textContent = '📱 Locale';
+      document.getElementById('syncStatus').title = 'Dati salvati solo su questo dispositivo';
+      ldLocal(); ra(); ren(); if (spots.length) fa();
+    }
+
+    function googleLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => {
+        console.error('Google login error:', err);
+        if (err.code === 'auth/popup-blocked') {
+          // Fallback per mobile: usa redirect
+          auth.signInWithRedirect(provider);
+        } else {
+          alert('Errore login: ' + err.message);
+        }
+      });
+    }
+
+    function doLogout() {
+      if (confirm('Vuoi uscire? I dati locali restano salvati sul dispositivo.')) {
+        auth.signOut();
+      }
+    }
+
+    // ========== INIT ====
+    if (useFirebase) {
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          showLoggedIn(user);
+        } else {
+          showLoggedOut();
+        }
+      });
+      // Show login button once Firebase is ready
+      document.getElementById('loginBtn').style.display = 'flex';
+      // Load local data while waiting for auth
+      ldLocal(); ra(); ren(); if (spots.length) fa();
+    } else {
+      ldLocal(); ra(); ren(); if (spots.length) fa();
+    }
+  </script>
 </body>
+
 </html>
