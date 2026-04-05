@@ -806,6 +806,11 @@
       color: var(--coral)
     }
 
+    /* --- FAB list (mobile only) --- */
+    .fab-list {
+      display: none
+    }
+
     /* --- FABs --- */
     .fab {
       position: fixed;
@@ -1177,6 +1182,39 @@
 
     /* ===== MOBILE ===== */
     @media(max-width:700px) {
+      /* Compact header on mobile */
+      header {
+        padding: 6px 10px;
+        flex-wrap: wrap;
+        gap: 4px
+      }
+      header h1 {
+        font-size: 1rem
+      }
+      .hr {
+        gap: 4px;
+        flex-wrap: wrap
+      }
+      .hs {
+        display: none
+      }
+      .hb {
+        padding: 4px 6px;
+        font-size: .6rem
+      }
+      #authArea {
+        order: -1
+      }
+      #userInfo {
+        font-size: .6rem
+      }
+      #userInfo span:not(#logoutBtn) {
+        display: none
+      }
+      #userInfo img {
+        width: 18px;
+        height: 18px
+      }
       /* Mobile search bar - collapsed by default */
       .search-box {
         width: 40px;
@@ -1567,8 +1605,8 @@
         <button class="gmc" onclick="hideJoinGroup()">Annulla</button>
       </div>
     </div>
-  <div class="fab-list" id="fabList" onclick="toggleSidebar()"><span>📋</span><span>Spot</span><div class="badge" id="spotBadge">0</div></div>
   </div>
+  <div class="fab-list" id="fabList" onclick="toggleSidebar()"><span>📋</span><span>Spot</span><div class="badge" id="spotBadge">0</div></div>
   <button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
   <div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
   <button class="fab-gps" id="fabGps" onclick="addKpFromGPS()">📡 Segna posizione</button>
