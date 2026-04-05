@@ -834,6 +834,31 @@
       display: none
     }
 
+    /* --- Map pick hint overlay --- */
+    .map-pick-hint {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--sea);
+      color: var(--sand);
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      font-weight: 600;
+      z-index: 1500;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      pointer-events: none;
+      text-align: center;
+      animation: pu 1.5s ease-in-out infinite
+    }
+
+    .map-pick-hint.on {
+      display: block
+    }
+
     /* --- FABs --- */
     .fab {
       position: fixed;
@@ -1531,6 +1556,7 @@
             <button class="tab" onclick="sf('wishlist',this)">Wishlist</button>
           </div>
         </div>
+        <div style="padding:8px 14px 0"><button class="bn bp" style="width:100%;padding:10px" onclick="sa()">＋ Aggiungi spot</button></div>
         <div class="sl" id="sl"></div>
       </div>
       <div class="fw" id="fw">
@@ -1595,7 +1621,8 @@
           <div class="fg"><label>Coordinate spot</label>
             <div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number"
                 step="any" placeholder="Lng"></div>
-            <div class="ch" id="cH">Clicca sulla mappa per posizionare lo spot</div>
+            <div style="margin-top:6px"><button class="action-btn blue" id="mapPickBtn" onclick="startMapPick()">📍 Posiziona sulla mappa</button></div>
+            <div class="ch" id="cH"></div>
           </div>
         </div>
         <div class="ff">
@@ -1629,9 +1656,8 @@
       </div>
     </div>
   </div>
-  <div class="fab-list" id="fabList" onclick="toggleSidebar()">📋 Lista Spot <div class="badge" id="spotBadge">0</div></div>
-  <button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
-  <div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
+  <div class="fab-list" id="fabList" onclick="toggleSidebar()">📋 Spots <div class="badge" id="spotBadge">0</div></div>
+  <div class="map-pick-hint" id="mapPickHint">📍 Tocca la mappa per posizionare lo spot</div>
   <input type="file" id="imp" accept=".json" style="display:none" onchange="handleImp(event)">
 
   <!-- Firebase SDK -->
@@ -1966,14 +1992,21 @@
         if (!name) return;
         curKps.push({ name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, id: Date.now().toString(36) });
         renKps(); kpMapMode = false;
-        document.getElementById('fabH').style.display = 'none';
+        document.getElementById('mapPickHint').classList.remove('on');
         return;
       }
-      document.getElementById('fLa').value = e.latlng.lat.toFixed(6);
-      document.getElementById('fLo').value = e.latlng.lng.toFixed(6);
-      document.getElementById('cH').textContent = e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
-      if (tmk) map.removeLayer(tmk);
-      tmk = L.circleMarker(e.latlng, { radius: 7, color: '#e07a5f', fillColor: '#e07a5f', fillOpacity: .5 }).addTo(map);
+      if (mapPickMode) {
+        document.getElementById('fLa').value = e.latlng.lat.toFixed(6);
+        document.getElementById('fLo').value = e.latlng.lng.toFixed(6);
+        document.getElementById('cH').textContent = '✅ ' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
+        if (tmk) map.removeLayer(tmk);
+        tmk = L.circleMarker(e.latlng, { radius: 7, color: '#e07a5f', fillColor: '#e07a5f', fillOpacity: .5 }).addTo(map);
+        // Auto-return to form
+        mapPickMode = false;
+        document.getElementById('mapPickHint').classList.remove('on');
+        var sb = document.querySelector('.sidebar'); if (sb) sb.classList.add('mobile-open');
+        return;
+      }
     });
 
     // ========== SIDEBAR LIST ====
@@ -1993,8 +2026,15 @@
     function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
     function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
     // ========== FORM ====
-    function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; opf(); }
-    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; document.getElementById('fabList').style.display = 'none'; document.getElementById('fabA').style.display = 'none'; ust(); }
+    let mapPickMode = false;
+    function sa() { eid = null; fst = 'wishlist'; clr(); opf(); }
+    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; document.getElementById('fabList').style.display = 'none'; var sb = document.querySelector('.sidebar'); if (sb) { sb.classList.add('mobile-open'); } ust(); }
+    function startMapPick() {
+      mapPickMode = true; plc = true;
+      document.getElementById('mapPickHint').classList.add('on');
+      // On mobile, close sidebar to show map
+      var sb = document.querySelector('.sidebar'); if (sb) sb.classList.remove('mobile-open');
+    }
     function oe(id) {
       const s = spots.find(x => x.id === id); if (!s) return;
       eid = id; fst = s.status; fnk = s.nokill || ''; plc = true;
@@ -2015,21 +2055,19 @@
       document.getElementById('fNo').value = s.notes || '';
       document.getElementById('fLa').value = s.lat;
       document.getElementById('fLo').value = s.lng;
-      document.getElementById('fabA').style.display = 'none';
-      document.getElementById('fabH').style.display = 'none';
-      // Close mobile bottom sheet if open
-      var sb = document.querySelector('.sidebar'); if (sb) sb.classList.remove('mobile-open');
       opf(); ust(); unk(); map.closePopup();
     }
     function cf() {
       document.getElementById('fw').classList.remove('on'); document.getElementById('lw').classList.remove('off');
-      document.getElementById('fabA').style.display = 'flex'; document.getElementById('fabH').style.display = 'none';
       document.getElementById('fabList').style.display = '';
-      plc = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
+      document.getElementById('mapPickHint').classList.remove('on');
+      plc = false; mapPickMode = false; eid = null; kpMapMode = false; clr(); if (tmk) { map.removeLayer(tmk); tmk = null; }
+      // On mobile, close the sidebar
+      var sb = document.querySelector('.sidebar'); if (sb) sb.classList.remove('mobile-open');
     }
     function clr() {
       ['fN', 'fLu', 'fRe', 'fT', 'fF', 'fLT', 'fTel', 'fPR', 'fL', 'fNo', 'fLa', 'fLo'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('cH').textContent = 'Clicca sulla mappa o usa GPS';
+      document.getElementById('cH').textContent = '';
       fst = 'wishlist'; fnk = ''; curLog = []; renLog(); clrNewLog();
       document.getElementById('newLog').classList.remove('open');
       curPdfs = []; renPdfs(); curKps = []; renKps(); clearKpMks();
@@ -2125,9 +2163,10 @@
       );
     }
     function addKpFromMap() {
-      kpMapMode = true;
-      document.getElementById('fabH').style.display = 'flex';
-      document.getElementById('fabH').textContent = '📍 Tocca la mappa per il keypoint';
+      kpMapMode = true; plc = true;
+      document.getElementById('mapPickHint').textContent = '📍 Tocca la mappa per il keypoint';
+      document.getElementById('mapPickHint').classList.add('on');
+      var sb = document.querySelector('.sidebar'); if (sb) sb.classList.remove('mobile-open');
       setGpsStatus('Tocca un punto sulla mappa...');
     }
     function setGpsStatus(msg, type) { const el = document.getElementById('gpsStatus'); el.textContent = msg; el.className = 'gps-status' + (type === 'error' ? ' error' : ''); }
