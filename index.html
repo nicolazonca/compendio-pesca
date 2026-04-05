@@ -999,7 +999,358 @@
       background: var(--coral)
     }
 
+
+    /* --- Group modal and popup --- */
+    .group-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center
+    }
+
+    .group-modal.open {
+      display: flex
+    }
+
+    .group-modal-content {
+      background: var(--foam);
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .3);
+      text-align: center
+    }
+
+    .group-modal-content h2 {
+      font-family: 'DM Serif Display', serif;
+      color: var(--sea);
+      margin-bottom: 16px;
+      font-size: 1.1rem
+    }
+
+    .group-modal-content p {
+      color: var(--ink-light);
+      margin-bottom: 16px;
+      font-size: .85rem
+    }
+
+    .group-modal-content input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--sand-dark);
+      border-radius: 5px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      margin-bottom: 12px
+    }
+
+    .group-modal-content .gmb {
+      display: flex;
+      gap: 10px
+    }
+
+    .group-modal-content .gmb button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s
+    }
+
+    .group-modal-content .gmb .gmc {
+      background: var(--kelp);
+      color: var(--foam)
+    }
+
+    .group-modal-content .gmb .gmc:hover {
+      background: var(--kelp-dark)
+    }
+
+    .group-modal-content .gmb .gmj {
+      background: var(--sea);
+      color: var(--foam)
+    }
+
+    .group-modal-content .gmb .gmj:hover {
+      background: var(--sea-light)
+    }
+
+    .group-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: .2s;
+      font-size: .7rem;
+      position: relative
+    }
+
+    .group-info:hover {
+      background: rgba(244, 234, 213, .1)
+    }
+
+    .group-popup {
+      display: none;
+      position: absolute;
+      top: 35px;
+      right: 0;
+      background: var(--foam);
+      border: 1px solid var(--sand-dark);
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 4px 12px var(--shadow);
+      min-width: 180px;
+      z-index: 1001;
+      font-size: .75rem;
+      text-align: left
+    }
+
+    .group-popup.open {
+      display: block
+    }
+
+    .group-popup .gpi {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .group-popup .gpi-label {
+      color: var(--ink-light);
+      font-weight: 500
+    }
+
+    .group-popup .gpi-value {
+      color: var(--sea);
+      font-weight: 600;
+      font-family: monospace;
+      font-size: .8rem
+    }
+
+    .group-popup .gpi-copy {
+      background: var(--sand);
+      border: none;
+      border-radius: 3px;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-size: .65rem;
+      color: var(--sea);
+      font-weight: 600;
+      transition: .2s
+    }
+
+    .group-popup .gpi-copy:hover {
+      background: var(--sand-dark)
+    }
+
+    .group-popup .gpb {
+      background: var(--coral);
+      color: var(--foam);
+      border: none;
+      border-radius: 5px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 8px;
+      transition: .2s
+    }
+
+    .group-popup .gpb:hover {
+      background: var(--coral-dark)
+    }
+
     /* ===== MOBILE ===== */
+    @media(max-width:700px) {
+      /* Mobile search bar - collapsed by default */
+      .search-box {
+        width: 40px;
+        left: auto;
+        right: 12px;
+        top: 10px
+      }
+
+      .search-box .search-row {
+        border-radius: 50px;
+        width: 40px;
+        height: 40px;
+        padding: 0
+      }
+
+      .search-box .search-row input {
+        display: none
+      }
+
+      .search-box .search-row button {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%
+      }
+
+      .search-box.expanded {
+        width: calc(100% - 24px);
+        left: 12px;
+        right: 12px
+      }
+
+      .search-box.expanded .search-row {
+        width: 100%;
+        height: auto;
+        border-radius: 8px
+      }
+
+      .search-box.expanded .search-row input {
+        display: flex;
+        flex: 1
+      }
+
+      .search-results {
+        position: fixed !important;
+        top: 50px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-height: 200px;
+        margin-top: 0
+      }
+
+      /* Mobile sidebar as bottom sheet */
+      .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 0;
+        border-left: none;
+        border-top: 1px solid var(--sand-dark);
+        border-radius: 12px 12px 0 0;
+        max-height: 70vh;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 800;
+        transition: height .3s ease;
+        box-shadow: 0 -4px 20px var(--shadow)
+      }
+
+      .sidebar.mobile-open {
+        display: flex;
+        height: 70vh
+      }
+
+      .sidebar .sbh::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+        transform: translateX(-50%)
+      }
+
+      .sidebar .sbh {
+        padding-top: 18px
+      }
+
+      .sl {
+        overflow-y: auto
+      }
+
+      /* FABs repositioned for mobile */
+      .fab {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        left: 16px
+      }
+
+      .fab-list {
+        position: fixed;
+        left: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom) + 54px);
+        background: var(--kelp);
+        color: var(--foam);
+        display: none;
+        padding: 12px 16px;
+        border-radius: 50px;
+        z-index: 999;
+        font-weight: 600;
+        font-size: .85rem;
+        box-shadow: 0 4px 18px rgba(26, 58, 74, .3);
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: .2s
+      }
+
+      .fab-list.show {
+        display: flex
+      }
+
+      .fab-list .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        background: var(--coral);
+        border-radius: 50%;
+        font-size: .7rem;
+        font-weight: 700;
+        margin-left: 4px
+      }
+
+      .fab-gps {
+        right: 16px;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        left: auto
+      }
+
+      .lt {
+        right: 10px;
+        top: 10px
+      }
+
+      .main {
+        flex-direction: column
+      }
+
+      header {
+        padding: 8px 12px;
+        padding-top: max(8px, env(safe-area-inset-top))
+      }
+
+      header h1 {
+        font-size: 1.1rem
+      }
+
+      .hs {
+        display: none
+      }
+
+      .ff {
+        padding-bottom: max(10px, env(safe-area-inset-bottom))
+      }
     @media(max-width:768px) {
       header {
         padding: 8px 12px;
@@ -1065,6 +1416,21 @@
     <div class="hr">
       <div class="hs">
         <span class="st"><span class="dt dv"></span><span id="cV">0</span> visitati</span>
+      <div class="group-info" id="groupInfo" style="display:none" onclick="toggleGroupPopup(event)">
+        👥 <span id="groupCode"></span>
+        <div class="group-popup" id="groupPopup">
+          <div class="gpi">
+            <span class="gpi-label">Codice:</span>
+            <span class="gpi-value" id="groupCodeDisp"></span>
+            <button class="gpi-copy" onclick="copyGroupCode(event)">Copia</button>
+          </div>
+          <div class="gpi">
+            <span class="gpi-label">Membri:</span>
+            <span class="gpi-value" id="groupMembers">0</span>
+          </div>
+          <button class="gpb" onclick="leaveGroup(event)">Lascia gruppo</button>
+        </div>
+      </div>
         <span class="st"><span class="dt dw"></span><span id="cW">0</span> wishlist</span>
         <span id="syncStatus" title="Stato sincronizzazione"></span>
       </div>
@@ -1084,7 +1450,7 @@
     <div class="search-box" id="searchBox">
       <div class="search-row">
         <input type="text" id="searchInput" placeholder="Cerca un luogo..." autocomplete="off">
-        <button onclick="doSearch()">🔍</button>
+        <button onclick="if (window.innerWidth <= 700) toggleSearchBox(); else doSearch()">🔍</button>
       </div>
       <div class="search-results" id="searchResults"></div>
     </div>
@@ -1181,6 +1547,29 @@
       </div>
     </div>
   </div>
+  <!-- Group modal -->
+  <div class="group-modal" id="groupModal">
+    <div class="group-modal-content">
+      <h2>Seleziona un opzione</h2>
+      <p>Vuoi creare un nuovo gruppo o unirti a uno esistente?</p>
+      <div class="gmb">
+        <button class="gmc" onclick="createGroup()">Crea Gruppo</button>
+        <button class="gmj" onclick="showJoinGroup()">Unisciti a un Gruppo</button>
+      </div>
+    </div>
+  </div>
+  <div class="group-modal" id="joinGroupModal">
+    <div class="group-modal-content">
+      <h2>Unisciti a un Gruppo</h2>
+      <p>Inserisci il codice del gruppo:</p>
+      <input type="text" id="joinGroupCode" placeholder="Es. ABC123" maxlength="6" style="text-transform:uppercase">
+      <div class="gmb">
+        <button class="gmj" onclick="joinGroup()">Unisciti</button>
+        <button class="gmc" onclick="hideJoinGroup()">Annulla</button>
+      </div>
+    </div>
+  <div class="fab-list" id="fabList" onclick="toggleSidebar()"><span>📋</span><span>Spot</span><div class="badge" id="spotBadge">0</div></div>
+  </div>
   <button class="fab fa" id="fabA" onclick="sa()">＋ Aggiungi spot</button>
   <div class="fab fhi" id="fabH">📍 Clicca sulla mappa</div>
   <button class="fab-gps" id="fabGps" onclick="addKpFromGPS()">📡 Segna posizione</button>
@@ -1229,6 +1618,142 @@
     let curLog = [], curPdfs = [], curKps = [], kpMapMode = false, kpMks = [];
 
     // ========== STORAGE FUNCTIONS ==========
+    // ========== GROUP SYSTEM ==========
+    let groupId = null, groupCode = null, groupMembers = [];
+
+    function genGroupCode() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code = "";
+      for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+      return code;
+    }
+
+    function checkGroupStatus() {
+      if (!useFirebase || !uid || !db) { showGroupModal(); return; }
+      db.collection("users").doc(uid).get().then(snap => {
+        if (snap.exists && snap.data().groupId) {
+          groupId = snap.data().groupId;
+          loadGroupData();
+        } else {
+          showGroupModal();
+        }
+      }).catch(err => { console.error("Group check error:", err); showGroupModal(); });
+    }
+
+    function loadGroupData() {
+      if (!groupId || !db) return;
+      db.collection("groups").doc(groupId).get().then(snap => {
+        if (snap.exists) {
+          const gd = snap.data();
+          groupCode = gd.code;
+          groupMembers = gd.members || [];
+          updateGroupUI();
+          startFirestoreListener();
+        }
+      }).catch(err => console.error("Load group error:", err));
+    }
+
+    function updateGroupUI() {
+      if (groupCode) {
+        document.getElementById("groupInfo").style.display = "inline-flex";
+        document.getElementById("groupCode").textContent = groupCode;
+        document.getElementById("groupCodeDisp").textContent = groupCode;
+        document.getElementById("groupMembers").textContent = groupMembers.length;
+      }
+    }
+
+    function showGroupModal() {
+      document.getElementById("groupModal").classList.add("open");
+    }
+
+    function createGroup() {
+      if (!useFirebase || !uid || !db) return;
+      const code = genGroupCode();
+      const gid = Date.now().toString(36);
+      db.collection("groups").doc(gid).set({
+        code: code,
+        name: "Gruppo di " + (document.getElementById("userName").textContent || "Pescatore"),
+        createdBy: uid,
+        members: [uid]
+      }).then(() => {
+        db.collection("users").doc(uid).set({ groupId: gid, displayName: document.getElementById("userName").textContent || uid }, { merge: true });
+        groupId = gid;
+        groupCode = code;
+        groupMembers = [uid];
+        document.getElementById("groupModal").classList.remove("open");
+        updateGroupUI();
+        startFirestoreListener();
+        alert("Gruppo creato! Codice: " + code);
+      }).catch(err => { console.error("Create group error:", err); alert("Errore creazione gruppo"); });
+    }
+
+    function showJoinGroup() {
+      document.getElementById("groupModal").classList.remove("open");
+      document.getElementById("joinGroupModal").classList.add("open");
+    }
+
+    function hideJoinGroup() {
+      document.getElementById("joinGroupModal").classList.remove("open");
+      document.getElementById("groupModal").classList.add("open");
+    }
+
+    function joinGroup() {
+      if (!useFirebase || !uid || !db) return;
+      const code = document.getElementById("joinGroupCode").value.trim().toUpperCase();
+      if (!code || code.length !== 6) { alert("Inserisci un codice valido (6 caratteri)"); return; }
+      db.collection("groups").where("code", "==", code).limit(1).get().then(snap => {
+        if (snap.empty) { alert("Gruppo non trovato"); return; }
+        const gd = snap.docs[0];
+        const gid = gd.id;
+        const gdata = gd.data();
+        if (gdata.members.includes(uid)) { alert("Sei già membro di questo gruppo"); return; }
+        db.collection("groups").doc(gid).update({ members: firebase.firestore.FieldValue.arrayUnion(uid) }).then(() => {
+          db.collection("users").doc(uid).set({ groupId: gid, displayName: document.getElementById("userName").textContent || uid }, { merge: true });
+          groupId = gid;
+          groupCode = code;
+          groupMembers = gdata.members;
+          groupMembers.push(uid);
+          document.getElementById("joinGroupModal").classList.remove("open");
+          updateGroupUI();
+          startFirestoreListener();
+          alert("Unito al gruppo!");
+        }).catch(err => { console.error("Join group error:", err); alert("Errore durante join"); });
+      }).catch(err => { console.error("Search group error:", err); alert("Errore durante ricerca"); });
+    }
+
+    function toggleGroupPopup(e) {
+      e.stopPropagation();
+      const popup = document.getElementById("groupPopup");
+      popup.classList.toggle("open");
+      document.addEventListener("click", function closePopup() {
+        popup.classList.remove("open");
+        document.removeEventListener("click", closePopup);
+      });
+    }
+
+    function copyGroupCode(e) {
+      e.stopPropagation();
+      if (groupCode) {
+        navigator.clipboard.writeText(groupCode).then(() => {
+          alert("Codice copiato: " + groupCode);
+        }).catch(() => alert("Errore copia"));
+      }
+    }
+
+    function leaveGroup(e) {
+      e.stopPropagation();
+      if (!confirm("Sei sicuro di voler lasciare il gruppo?")) return;
+      if (!useFirebase || !uid || !db || !groupId) return;
+      db.collection("groups").doc(groupId).update({ members: firebase.firestore.FieldValue.arrayRemove(uid) }).then(() => {
+        db.collection("users").doc(uid).update({ groupId: firebase.firestore.FieldValue.delete() });
+        groupId = null;
+        groupCode = null;
+        groupMembers = [];
+        document.getElementById("groupInfo").style.display = "none";
+        document.getElementById("groupPopup").classList.remove("open");
+        showGroupModal();
+      }).catch(err => { console.error("Leave group error:", err); alert("Errore durante leave"); });
+    }
     function ldLocal() {
       try {
         const s = localStorage.getItem('fishing-spots');
@@ -1409,6 +1934,7 @@
     function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
     function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
 
+      updateSpotBadge();
     // ========== FORM ====
     function sa() { plc = true; eid = null; fst = 'wishlist'; document.getElementById('fabA').style.display = 'none'; document.getElementById('fabH').style.display = 'flex'; document.getElementById('fabGps').classList.add('on'); opf(); }
     function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; ust(); }
@@ -1571,8 +2097,8 @@
         if (i > -1) {
           spots[i] = { ...spots[i], ...d };
           amk(spots[i]);
-          if (useFirebase && uid && db) {
-            db.collection('users/' + uid + '/spots').doc(eid).set(spots[i]).catch(err => console.error("Firestore update error:", err));
+          if (useFirebase && uid && db && groupId) {
+            db.collection('groups/' + groupId + '/spots').doc(eid).set(spots[i]).catch(err => console.error("Firestore update error:", err));
           }
         }
       } else {
@@ -1580,8 +2106,8 @@
         spots.push(ns);
         amk(ns);
         map.flyTo([lat, lng], 12, { duration: .5 });
-        if (useFirebase && uid && db) {
-          db.collection('users/' + uid + '/spots').doc(ns.id).set(ns).catch(err => console.error("Firestore create error:", err));
+        if (useFirebase && uid && db && groupId) {
+          db.collection('groups/' + groupId + '/spots').doc(ns.id).set(ns).catch(err => console.error("Firestore create error:", err));
         }
       }
 
@@ -1593,8 +2119,8 @@
       rmk(eid);
       spots = spots.filter(s => s.id !== eid);
 
-      if (useFirebase && uid && db) {
-        db.collection('users/' + uid + '/spots').doc(eid).delete().catch(err => console.error("Firestore delete error:", err));
+      if (useFirebase && uid && db && groupId) {
+        db.collection('groups/' + groupId + '/spots').doc(eid).delete().catch(err => console.error("Firestore delete error:", err));
       }
 
       sav(); ren(); cf();
@@ -1616,8 +2142,8 @@
                 spots.push(s);
                 c++;
                 // If Firebase, batch-write all new spots
-                if (useFirebase && uid && db) {
-                  db.collection('users/' + uid + '/spots').doc(s.id).set(s).catch(err => console.error("Firestore import error:", err));
+                if (useFirebase && uid && db && groupId) {
+                  db.collection('groups/' + groupId + '/spots').doc(s.id).set(s).catch(err => console.error("Firestore import error:", err));
                 }
               }
             });
@@ -1690,8 +2216,9 @@
     let firestoreUnsubscribe = null;
 
     function startFirestoreListener() {
+      if (!groupId || !db) return;
       if (firestoreUnsubscribe) firestoreUnsubscribe();
-      firestoreUnsubscribe = db.collection('users/' + uid + '/spots').onSnapshot(snap => {
+      firestoreUnsubscribe = db.collection('groups/' + groupId + '/spots').onSnapshot(snap => {
         spots = [];
         snap.forEach(doc => spots.push(doc.data()));
         try { localStorage.setItem('fishing-spots', JSON.stringify(spots)); } catch (e) { }
@@ -1704,15 +2231,14 @@
         ldLocal(); ra(); ren(); if (spots.length) fa();
       });
     }
-
     function showLoggedIn(user) {
       uid = user.uid;
-      document.getElementById('loginBtn').style.display = 'none';
-      document.getElementById('userInfo').style.display = 'flex';
-      document.getElementById('userName').textContent = user.displayName || user.email || '';
-      if (user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
-      else document.getElementById('userPhoto').style.display = 'none';
-      startFirestoreListener();
+      document.getElementById("loginBtn").style.display = "none";
+      document.getElementById("userInfo").style.display = "flex";
+      document.getElementById("userName").textContent = user.displayName || user.email || "";
+      if (user.photoURL) document.getElementById("userPhoto").src = user.photoURL;
+      else document.getElementById("userPhoto").style.display = "none";
+      checkGroupStatus();
     }
 
     function showLoggedOut() {
@@ -1744,6 +2270,35 @@
       }
     }
 
+    // ========== MOBILE UI ==========
+        function toggleSidebar() {
+      const sidebar = document.querySelector(".sidebar");
+      sidebar.classList.toggle("mobile-open");
+    }
+
+    function updateSpotBadge() {
+      const badge = document.getElementById("spotBadge");
+      if (badge) badge.textContent = spots.length;
+    }
+
+    function toggleSearchBox() {
+      const searchBox = document.getElementById("searchBox");
+      searchBox.classList.toggle("expanded");
+      if (searchBox.classList.contains("expanded")) {
+        document.getElementById("searchInput").focus();
+      }
+    }
+
+    // Close mobile sidebar when clicking outside
+    document.addEventListener("click", function(e) {
+      if (window.innerWidth <= 700) {
+        const sidebar = document.querySelector(".sidebar");
+        const fabList = document.getElementById("fabList");
+        if (sidebar && sidebar.classList.contains("mobile-open") && !sidebar.contains(e.target) && !fabList.contains(e.target)) {
+          sidebar.classList.remove("mobile-open");
+        }
+      }
+    });
     // ========== INIT ====
     if (useFirebase) {
       auth.onAuthStateChanged(user => {
