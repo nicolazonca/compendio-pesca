@@ -2026,7 +2026,7 @@
       if (kps2.length) h += '<br><small>📍 ' + kps2.length + ' keypoint' + (kps2.length > 1 ? 's' : '') + '</small>';
       if (sp.notes) h += '<p style="margin-top:5px;color:#4a5a5a;font-size:.78rem">' + esc(sp.notes) + '</p>';
       if (sp.link) h += '<a class="pl" href="' + esc(sp.link) + '" target="_blank">🔗 Link</a><br>';
-      h += '<div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap"><a class="pl" href="#" onclick="event.preventDefault();oe(\'' + sp.id + '\')">✏️ Modifica</a><a class="pl" href="#" onclick="event.preventDefault();expPDF(\'' + sp.id + '\')">📄 Stampa</a></div>';
+      h += '<div style="margin-top:6px"><a class="pl" href="#" onclick="event.preventDefault();oe(\'' + sp.id + '\')" style="display:inline-block;background:#1a3a4a;color:#f4ead5;padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none">Apri spot</a></div>';
       m.bindPopup(h, { maxWidth: 280 }); mks[sp.id] = m;
       // Keypoint markers
       if (kps2.length) { m._kpMks = []; kps2.forEach(k => { const km = L.circleMarker([k.lat, k.lng], { radius: 5, color: '#e07a5f', fillColor: '#fff', fillOpacity: .9, weight: 2 }).addTo(map); km.bindTooltip(k.name, { permanent: false, direction: 'top', offset: [0, -6] }); km.bindPopup('<b>🔹 ' + esc(k.name) + '</b><br><small>' + k.lat.toFixed(5) + ', ' + k.lng.toFixed(5) + '</small><br><small style="color:#888">' + esc(sp.name) + '</small>'); m._kpMks.push(km); }); }
