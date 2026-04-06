@@ -453,6 +453,72 @@
       background: var(--kelp-dark)
     }
 
+    /* --- Photo gallery --- */
+    .photo-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px
+    }
+
+    .photo-item {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid var(--sand-dark);
+      cursor: pointer
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .photo-item .photo-del {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: .6rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    /* Photo viewer overlay */
+    .photo-viewer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,.9);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer
+    }
+
+    .photo-viewer.on {
+      display: flex
+    }
+
+    .photo-viewer img {
+      max-width: 95%;
+      max-height: 90%;
+      border-radius: 8px
+    }
+
     .em {
       text-align: center;
       padding: 40px 18px;
@@ -1560,6 +1626,22 @@
           <div class="fg"><label>Persona di riferimento</label><input id="fPR" placeholder="Nome del contatto locale">
           </div>
 
+          <div class="fg"><label>Link</label><input id="fL" type="url" placeholder="https://..."></div>
+          <div class="fg"><label>Note</label><textarea id="fNo"
+              placeholder="Accesso, parcheggio, consigli..."></textarea></div>
+          <div class="fg"><label>Coordinate spot</label>
+            <div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number"
+                step="any" placeholder="Lng"></div>
+            <div style="margin-top:6px"><button class="action-btn blue" id="mapPickBtn" onclick="startMapPick()">📍 Posiziona sulla mappa</button></div>
+            <div class="ch" id="cH"></div>
+          </div>
+
+          <div class="fg section-divider"><label class="section-label">📷 Foto</label></div>
+          <div class="photo-list" id="photoList"></div>
+          <div class="fg"><button class="action-btn blue" onclick="document.getElementById('photoInput').click()">📷
+              Scatta / Scegli foto</button><input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none"
+              onchange="handlePhotoUpload(event)" multiple></div>
+
           <div class="fg section-divider"><label class="section-label">📋 Diario di pesca</label></div>
           <div class="log-list" id="logList"></div>
           <div class="log-add"><button class="action-btn green" onclick="toggleNewLog()">＋ Nuova uscita</button></div>
@@ -1589,16 +1671,6 @@
               Da mappa</button>
           </div>
           <div class="gps-status" id="gpsStatus"></div>
-
-          <div class="fg"><label>Link</label><input id="fL" type="url" placeholder="https://..."></div>
-          <div class="fg"><label>Note</label><textarea id="fNo"
-              placeholder="Accesso, parcheggio, consigli..."></textarea></div>
-          <div class="fg"><label>Coordinate spot</label>
-            <div class="crd"><input id="fLa" type="number" step="any" placeholder="Lat"><input id="fLo" type="number"
-                step="any" placeholder="Lng"></div>
-            <div style="margin-top:6px"><button class="action-btn blue" id="mapPickBtn" onclick="startMapPick()">📍 Posiziona sulla mappa</button></div>
-            <div class="ch" id="cH"></div>
-          </div>
         </div>
         <div class="ff">
           <button class="bn bd" id="db" style="display:none" onclick="ds()">Elimina</button>
@@ -1635,6 +1707,7 @@
   <div class="map-pick-hint" id="mapPickHint">📍 Tocca la mappa per posizionare lo spot</div>
   <input type="file" id="imp" accept=".json" style="display:none" onchange="handleImp(event)">
 
+  <div class="photo-viewer" id="photoViewer" onclick="this.classList.remove('on')"><img id="photoViewerImg" src=""></div>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1675,7 +1748,7 @@
 
     // ========== GLOBALS ==========
     let spots = [], eid = null, plc = false, flt = 'all', mks = {}, tmk = null, fst = 'wishlist', fnk = '', searchMk = null;
-    let curLog = [], curPdfs = [], curKps = [], kpMapMode = false, kpMks = [];
+    let curLog = [], curPdfs = [], curKps = [], curPhotos = [], kpMapMode = false, kpMks = [];
 
     // ========== STORAGE FUNCTIONS ==========
     // ========== GROUP SYSTEM ==========
@@ -2033,6 +2106,7 @@
       else { curLog = []; if (s.memoria || s.catture || s.esca || s.date) { curLog.push({ date: s.date || 'N/D', catture: s.catture || '', esca: s.esca || '', note: s.memoria || '', id: Date.now().toString(36) }); } }
       renLog();
       curPdfs = Array.isArray(s.pdfs) ? s.pdfs.slice() : []; renPdfs();
+      curPhotos = Array.isArray(s.photos) ? s.photos.slice() : []; renPhotos();
       curKps = Array.isArray(s.keypoints) ? s.keypoints.slice() : []; renKps();
       document.getElementById('fL').value = s.link || '';
       document.getElementById('fNo').value = s.notes || '';
@@ -2053,7 +2127,7 @@
       document.getElementById('cH').textContent = '';
       fst = 'wishlist'; fnk = ''; curLog = []; renLog(); clrNewLog();
       document.getElementById('newLog').classList.remove('open');
-      curPdfs = []; renPdfs(); curKps = []; renKps(); clearKpMks();
+      curPdfs = []; renPdfs(); curPhotos = []; renPhotos(); curKps = []; renKps(); clearKpMks();
       document.getElementById('gpsStatus').textContent = '';
       ust(); unk();
     }
@@ -2113,6 +2187,47 @@
       el.innerHTML = curPdfs.map(p => '<div class="pdf-item"><span>📄</span><span class="pdf-name">' + esc(p.name) + '</span><button class="pdf-view" onclick="viewPdf(\'' + p.id + '\')">Apri</button><button class="pdf-del" onclick="delPdf(\'' + p.id + '\')">✕</button></div>').join('');
     }
 
+    // ========== PHOTOS ====
+    function handlePhotoUpload(ev) {
+      const files = ev.target.files; if (!files.length) return;
+      Array.from(files).forEach(function(f) {
+        if (f.size > 3 * 1024 * 1024) { alert('Max 3MB per foto. "' + f.name + '" saltata.'); return; }
+        const r = new FileReader();
+        r.onload = function(e) {
+          // Compress the image
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxW = 1200, maxH = 1200;
+            let w = img.width, h = img.height;
+            if (w > maxW || h > maxH) { const ratio = Math.min(maxW / w, maxH / h); w = Math.round(w * ratio); h = Math.round(h * ratio); }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            curPhotos.push({ data: compressed, id: Date.now().toString(36) + Math.random().toString(36).slice(2,4), name: f.name });
+            renPhotos();
+          };
+          img.src = e.target.result;
+        };
+        r.readAsDataURL(f);
+      });
+      ev.target.value = '';
+    }
+
+    function delPhoto(pid) { curPhotos = curPhotos.filter(p => p.id !== pid); renPhotos(); }
+
+    function viewPhoto(pid) {
+      const p = curPhotos.find(x => x.id === pid); if (!p) return;
+      document.getElementById('photoViewerImg').src = p.data;
+      document.getElementById('photoViewer').classList.add('on');
+    }
+
+    function renPhotos() {
+      const el = document.getElementById('photoList');
+      if (!curPhotos.length) { el.innerHTML = ''; return; }
+      el.innerHTML = curPhotos.map(p => '<div class="photo-item" onclick="viewPhoto(\'' + p.id + '\')"><img src="' + p.data + '"><button class="photo-del" onclick="event.stopPropagation();delPhoto(\'' + p.id + '\')">✕</button></div>').join('');
+    }
+
     // ========== KEYPOINTS (GPS + MAP) ====
     function addKpFromGPS() {
       if (!navigator.geolocation) { setGpsStatus('GPS non disponibile su questo dispositivo', 'error'); return; }
@@ -2168,7 +2283,7 @@
       const name = document.getElementById('fN').value.trim(), lat = parseFloat(document.getElementById('fLa').value), lng = parseFloat(document.getElementById('fLo').value);
       if (!name) { alert('Dai un nome allo spot!'); return; }
       if (isNaN(lat) || isNaN(lng)) { alert('Posiziona il pin sulla mappa o inserisci le coordinate.'); return; }
-      const d = { name, status: fst, lat, lng, luogo: document.getElementById('fLu').value.trim(), regione: document.getElementById('fRe').value.trim(), type: document.getElementById('fT').value.trim(), nokill: fnk, fish: document.getElementById('fF').value.trim(), luogoTess: document.getElementById('fLT').value.trim(), tel: document.getElementById('fTel').value.trim(), persona: document.getElementById('fPR').value.trim(), log: curLog.slice(), pdfs: curPdfs.slice(), keypoints: curKps.slice(), link: document.getElementById('fL').value.trim(), notes: document.getElementById('fNo').value.trim() };
+      const d = { name, status: fst, lat, lng, luogo: document.getElementById('fLu').value.trim(), regione: document.getElementById('fRe').value.trim(), type: document.getElementById('fT').value.trim(), nokill: fnk, fish: document.getElementById('fF').value.trim(), luogoTess: document.getElementById('fLT').value.trim(), tel: document.getElementById('fTel').value.trim(), persona: document.getElementById('fPR').value.trim(), log: curLog.slice(), pdfs: curPdfs.slice(), photos: curPhotos.slice(), keypoints: curKps.slice(), link: document.getElementById('fL').value.trim(), notes: document.getElementById('fNo').value.trim() };
 
       if (eid) {
         const i = spots.findIndex(s => s.id === eid);
