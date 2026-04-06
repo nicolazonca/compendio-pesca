@@ -347,6 +347,61 @@
       box-shadow: 0 1px 3px var(--shadow)
     }
 
+    .filter-bar {
+      padding: 6px 14px 0;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .filter-bar input {
+      flex: 1;
+      padding: 7px 10px 7px 30px;
+      border: 1.5px solid var(--sand-dark);
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      background: var(--foam);
+      color: var(--ink);
+      outline: none;
+      transition: border .2s;
+    }
+
+    .filter-bar input:focus {
+      border-color: var(--sea-light);
+    }
+
+    .filter-bar .filter-icon {
+      position: absolute;
+      left: 22px;
+      font-size: .8rem;
+      pointer-events: none;
+      opacity: .5;
+    }
+
+    .filter-bar .filter-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .filter-bar .filter-clear {
+      position: absolute;
+      right: 6px;
+      background: none;
+      border: none;
+      font-size: .9rem;
+      cursor: pointer;
+      color: var(--ink-light);
+      padding: 2px 4px;
+      display: none;
+    }
+
+    .filter-bar .filter-clear.on {
+      display: block;
+    }
+
     .sl {
       flex: 1;
       overflow-y: auto;
@@ -1592,6 +1647,13 @@
             <button class="tab" onclick="sf('wishlist',this)">Wishlist</button>
           </div>
         </div>
+        <div class="filter-bar">
+          <div class="filter-wrap">
+            <span class="filter-icon">🔍</span>
+            <input id="filterInput" type="text" placeholder="Filtra per nome, regione, pesce..." oninput="applyFilter()">
+            <button class="filter-clear" id="filterClear" onclick="clearFilter()">✕</button>
+          </div>
+        </div>
         <div style="padding:8px 14px 0"><button class="bn bp" style="width:100%;padding:10px" onclick="sa()">＋ Aggiungi spot</button></div>
         <div class="sl" id="sl"></div>
         <div style="padding:6px 14px 10px;border-top:1px solid var(--sand-dark);display:flex;gap:6px;flex-wrap:wrap">
@@ -1747,7 +1809,7 @@
     }
 
     // ========== GLOBALS ==========
-    let spots = [], eid = null, plc = false, flt = 'all', mks = {}, tmk = null, fst = 'wishlist', fnk = '', searchMk = null;
+    let spots = [], eid = null, plc = false, flt = 'all', mks = {}, tmk = null, fst = 'wishlist', fnk = '', searchMk = null, filterText = '';
     let curLog = [], curPdfs = [], curKps = [], curPhotos = [], kpMapMode = false, kpMks = [];
 
     // ========== STORAGE FUNCTIONS ==========
@@ -2066,18 +2128,54 @@
     });
 
     // ========== SIDEBAR LIST ====
+    function matchesFilter(s) {
+      if (!filterText) return true;
+      const q = filterText.toLowerCase();
+      return (s.name && s.name.toLowerCase().includes(q)) ||
+             (s.regione && s.regione.toLowerCase().includes(q)) ||
+             (s.fish && s.fish.toLowerCase().includes(q)) ||
+             (s.luogo && s.luogo.toLowerCase().includes(q)) ||
+             (s.type && s.type.toLowerCase().includes(q));
+    }
     function ren() {
-      const fl = flt === 'all' ? spots : spots.filter(s => s.status === flt);
+      var fl = flt === 'all' ? spots : spots.filter(s => s.status === flt);
+      fl = fl.filter(matchesFilter);
       document.getElementById('cV').textContent = spots.filter(s => s.status === 'visited').length;
       document.getElementById('cW').textContent = spots.filter(s => s.status === 'wishlist').length;
       const el = document.getElementById('sl');
-      if (!fl.length) { el.innerHTML = '<div class="em"><div class="ic">🌊</div><p>' + (flt === 'all' ? 'Nessuno spot ancora.<br>Tocca "Aggiungi spot" per iniziare!' : 'Nessuno spot qui.') + '</p></div>'; return; }
+      if (!fl.length) { el.innerHTML = '<div class="em"><div class="ic">🌊</div><p>' + (filterText ? 'Nessuno spot trovato per "' + esc(filterText) + '".' : (flt === 'all' ? 'Nessuno spot ancora.<br>Tocca "Aggiungi spot" per iniziare!' : 'Nessuno spot qui.')) + '</p></div>'; updateMapFilter(); updateSpotBadge(); return; }
       el.innerHTML = fl.map(s => {
         const lc = Array.isArray(s.log) ? s.log.length : 0, pc = Array.isArray(s.pdfs) ? s.pdfs.length : 0, kc = Array.isArray(s.keypoints) ? s.keypoints.length : 0;
         const lastLog = lc ? s.log[s.log.length - 1] : null;
         return '<div class="cd ' + s.status + '" onclick="fly(\'' + s.id + '\')"><div class="br"></div><h3>' + esc(s.name) + '</h3><div class="mt">' + (s.luogo ? '<span>📍 ' + esc(s.luogo) + '</span>' : '') + (s.regione ? '<span>🗺️ ' + esc(s.regione) + '</span>' : '') + (s.type ? '<span>🎣 ' + esc(s.type) + '</span>' : '') + (s.nokill === 'si' ? '<span>🟢 NK</span>' : '') + (s.fish ? '<span>🐟 ' + esc(s.fish) + '</span>' : '') + (lc ? '<span>📋 ' + lc + '</span>' : '') + (lastLog ? '<span>📅 ' + esc(lastLog.date) + '</span>' : '') + (pc ? '<span>📎 ' + pc + '</span>' : '') + (kc ? '<span>📍 ' + kc + '</span>' : '') + '</div>' + (s.notes ? '<div class="nt">' + esc(s.notes) + '</div>' : '') + '<div class="cd-actions"><a class="cd-gmap" href="https://www.google.com/maps?q=' + s.lat + ',' + s.lng + '" target="_blank" onclick="event.stopPropagation()">🗺️ Google Maps</a><button class="cd-edit" onclick="event.stopPropagation();oe(\'' + s.id + '\')">✏️ Modifica</button></div></div>';
       }).join('');
+      updateMapFilter();
       updateSpotBadge();
+    }
+    function updateMapFilter() {
+      spots.forEach(function(s) {
+        if (!mks[s.id]) return;
+        var show = matchesFilter(s) && (flt === 'all' || s.status === flt);
+        if (show) {
+          if (!map.hasLayer(mks[s.id])) { mks[s.id].addTo(map); }
+          if (mks[s.id]._kpMks) mks[s.id]._kpMks.forEach(function(km) { if (!map.hasLayer(km)) km.addTo(map); });
+        } else {
+          if (map.hasLayer(mks[s.id])) { map.removeLayer(mks[s.id]); }
+          if (mks[s.id]._kpMks) mks[s.id]._kpMks.forEach(function(km) { if (map.hasLayer(km)) map.removeLayer(km); });
+        }
+      });
+    }
+    function applyFilter() {
+      filterText = (document.getElementById('filterInput').value || '').trim();
+      var cb = document.getElementById('filterClear');
+      if (cb) cb.classList.toggle('on', filterText.length > 0);
+      ren();
+    }
+    function clearFilter() {
+      document.getElementById('filterInput').value = '';
+      filterText = '';
+      document.getElementById('filterClear').classList.remove('on');
+      ren();
     }
     function sf(f, b) { flt = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('a')); b.classList.add('a'); ren(); }
     function fly(id) { const s = spots.find(x => x.id === id); if (s && mks[id]) { map.flyTo([s.lat, s.lng], 14, { duration: .7 }); mks[id].openPopup(); } }
