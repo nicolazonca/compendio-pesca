@@ -2011,7 +2011,7 @@
     // ========== FORM ====
     let mapPickMode = false;
     function sa() { eid = null; fst = 'wishlist'; clr(); opf(); }
-    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; document.getElementById('fabList').style.display = 'none'; var sb = document.querySelector('.sidebar'); if (sb) { sb.classList.add('mobile-open'); } ust(); }
+    function opf() { document.getElementById('lw').classList.add('off'); document.getElementById('fw').classList.add('on'); document.getElementById('ft').textContent = eid ? 'Modifica spot' : 'Nuovo spot'; document.getElementById('db').style.display = eid ? 'inline-block' : 'none'; document.getElementById('pdfB').style.display = eid ? 'inline-block' : 'none'; document.getElementById('fabList').style.display = 'none'; setTimeout(function() { var sb = document.querySelector('.sidebar'); if (sb) sb.classList.add('mobile-open'); }, 50); ust(); }
     function startMapPick() {
       mapPickMode = true; plc = true;
       document.getElementById('mapPickHint').classList.add('on');
