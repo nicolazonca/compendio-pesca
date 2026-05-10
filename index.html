@@ -1660,6 +1660,7 @@
           <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="expJSON()">↗ Esporta</button>
           <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="document.getElementById('imp').click()">↙ Importa</button>
           <button class="hb" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="expKML()">🌍 KML</button>
+          <button class="hb" id="backupBtn" style="color:var(--ink);border-color:var(--sand-dark);flex:1" onclick="expFullBackup()" title="Backup completo (spot + dati gruppo)">💾 Backup</button>
         </div>
       </div>
       <div class="fw" id="fw">
@@ -1844,8 +1845,21 @@
           groupMembers = gd.members || [];
           updateGroupUI();
           startFirestoreListener();
+        } else {
+          // Documento gruppo cancellato: ripulisci il riferimento e fai ripartire l'utente
+          console.warn("Group", groupId, "no longer exists, resetting reference");
+          if (uid) db.collection("users").doc(uid).update({ groupId: firebase.firestore.FieldValue.delete() }).catch(() => {});
+          groupId = null; groupCode = null; groupMembers = [];
+          alert("Il gruppo a cui appartenevi non esiste più. Crea o unisciti a un altro gruppo.");
+          showGroupModal();
         }
-      }).catch(err => console.error("Load group error:", err));
+      }).catch(err => {
+        console.error("Load group error:", err);
+        if (err && err.code === "permission-denied") {
+          alert("Permessi insufficienti per accedere al gruppo.\n\nPossibili cause:\n• Regole di sicurezza Firestore troppo restrittive o scadute\n• Sei stato rimosso dai membri del gruppo\n\nContatta chi gestisce il progetto Firebase.");
+        }
+        showGroupModal();
+      });
     }
 
     function updateGroupUI() {
@@ -2420,13 +2434,68 @@
     // ========== EXPORT / IMPORT ====
     function expJSON() { const b = new Blob([JSON.stringify(spots, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'fishing-spots.json'; a.click(); }
 
+    const BACKUP_REMINDER_DAYS = 14;
+
+    function expFullBackup() {
+      const payload = {
+        type: 'compendio-pesca-full-backup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        group: groupId ? { id: groupId, code: groupCode, members: groupMembers } : null,
+        spots: spots
+      };
+      const today = new Date().toISOString().slice(0, 10);
+      const fname = 'compendio-pesca-backup-' + today + '.json';
+      const b = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = fname;
+      a.click();
+      try { localStorage.setItem('lastBackupAt', Date.now().toString()); } catch (e) {}
+      updateBackupBtn();
+    }
+
+    function updateBackupBtn() {
+      const btn = document.getElementById('backupBtn');
+      if (!btn) return;
+      let last = 0;
+      try { last = parseInt(localStorage.getItem('lastBackupAt') || '0', 10); } catch (e) {}
+      const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+      if (days === null || days >= BACKUP_REMINDER_DAYS) {
+        btn.style.background = '#fff4e0';
+        btn.style.borderColor = '#e07a5f';
+        btn.title = days === null ? 'Mai fatto un backup completo — clicca per scaricarlo' : 'Ultimo backup: ' + days + ' giorni fa';
+      } else {
+        btn.style.background = '';
+        btn.style.borderColor = 'var(--sand-dark)';
+        btn.title = 'Ultimo backup: ' + days + ' giorni fa';
+      }
+    }
+
+    function checkBackupReminder() {
+      if (!spots || !spots.length) return;
+      let last = 0;
+      try { last = parseInt(localStorage.getItem('lastBackupAt') || '0', 10); } catch (e) {}
+      const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+      updateBackupBtn();
+      if (days !== null && days < BACKUP_REMINDER_DAYS) return;
+      const msg = days === null
+        ? "Non hai mai fatto un backup completo dei tuoi dati.\n\nVuoi scaricarlo ora? (consigliato)"
+        : "Ultimo backup: " + days + " giorni fa.\n\nVuoi scaricarne uno aggiornato?";
+      if (confirm(msg)) expFullBackup();
+      else { try { localStorage.setItem('lastBackupAt', Date.now().toString()); } catch (e) {} updateBackupBtn(); }
+    }
+
     function handleImp(e) {
       const f = e.target.files[0]; if (!f) return;
       const r = new FileReader();
       r.onload = function (ev) {
         try {
-          const im = JSON.parse(ev.target.result);
-          if (Array.isArray(im)) {
+          const parsed = JSON.parse(ev.target.result);
+          const im = Array.isArray(parsed)
+            ? parsed
+            : (parsed && Array.isArray(parsed.spots) ? parsed.spots : null);
+          if (im) {
             let c = 0;
             im.forEach(s => {
               if (!spots.find(x => x.id === s.id)) {
@@ -2440,6 +2509,8 @@
             });
             sav(); ra(); ren(); fa();
             alert('Importati ' + c + ' nuovi spot! (Nota: PDF con Firebase contiene solo URL, non dati base64)');
+          } else {
+            alert('File non valido.');
           }
         } catch (err) { alert('File non valido.'); }
       };
@@ -2505,6 +2576,7 @@
 
     // ========== GOOGLE AUTH ====
     let firestoreUnsubscribe = null;
+    let backupReminderShown = false;
 
     function startFirestoreListener() {
       if (!groupId || !db) return;
@@ -2516,10 +2588,13 @@
         ra(); ren(); if (spots.length) fa();
         document.getElementById('syncStatus').textContent = '☁️ Cloud';
         document.getElementById('syncStatus').title = 'Sincronizzato con il cloud';
+        updateBackupBtn();
+        if (!backupReminderShown) { backupReminderShown = true; setTimeout(checkBackupReminder, 2000); }
       }, err => {
         console.error('Firestore listener error:', err);
         document.getElementById('syncStatus').textContent = '⚠️ Offline';
         ldLocal(); ra(); ren(); if (spots.length) fa();
+        updateBackupBtn();
       });
     }
     function showLoggedIn(user) {
@@ -2540,6 +2615,7 @@
       document.getElementById('syncStatus').textContent = '📱 Locale';
       document.getElementById('syncStatus').title = 'Dati salvati solo su questo dispositivo';
       ldLocal(); ra(); ren(); if (spots.length) fa();
+      updateBackupBtn();
     }
 
     function googleLogin() {
